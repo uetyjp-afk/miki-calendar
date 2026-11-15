@@ -365,7 +365,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
     </div>
   </div>
 
-  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v10</span></footer>
+  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v11</span></footer>
 </div>
 
 <!-- 設定画面 -->
@@ -1028,6 +1028,7 @@ let suppressCellClick = 0;
 function attachChipDrag(chip, e, dayKey){
   chip.addEventListener("pointerdown", ev=>{
     const sx = ev.clientX, sy = ev.clientY;
+    const downAt = Date.now();
     let activated = false, dragging = false, cancelled = false;
     let ghost = null, hl = null, onTrash = false;
     const timer = setTimeout(()=>{
@@ -1041,11 +1042,11 @@ function attachChipDrag(chip, e, dayKey){
       document.body.appendChild(ghost);
       try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}
       openEvMenu(e, chip);
-    }, 450);
+    }, 400);
     const move = mv=>{
       const dx = mv.clientX - sx, dy = mv.clientY - sy;
       if(!activated){
-        if(Math.hypot(dx, dy) > 10){ cancelled = true; clearTimeout(timer); }
+        if(Math.hypot(dx, dy) > 22){ cancelled = true; clearTimeout(timer); }
         return;
       }
       if(!dragging){
@@ -1075,7 +1076,10 @@ function attachChipDrag(chip, e, dayKey){
       if(ghost) ghost.remove();
       if(hl) hl.classList.remove("drop-hl");
       $("trashZone").classList.remove("on"); $("trashZone").classList.remove("hot");
-      if(!activated) return;
+      if(!activated){
+        if(!cancelled && Date.now() - downAt >= 380){ suppressCellClick = Date.now(); openEvMenu(e, chip); }
+        return;
+      }
       suppressCellClick = Date.now();
       if(!dragging) return;
       if(onTrash){
