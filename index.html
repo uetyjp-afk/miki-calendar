@@ -236,6 +236,8 @@ footer.note{text-align:center;color:var(--sub);font-size:11px;margin-top:18px;fo
 .ev-dates{display:flex;align-items:center;gap:8px}
 .ev-dates input{flex:1;min-width:0;border:2px solid var(--line);border-radius:12px;padding:10px;font-family:inherit;font-size:14.5px;font-weight:700;color:var(--ink)}
 .ev-dates input:focus{outline:none;border-color:var(--pink)}
+textarea.ev-text{min-height:64px;resize:vertical}
+.ev-map{flex:none;font-size:11.5px;font-weight:800;color:#3a7bd5;text-decoration:none;background:#e8f0fd;border-radius:99px;padding:5px 10px}
 /* ＋ボタンとスタンプトレイ */
 #addEventBtn{position:fixed;right:16px;bottom:104px;z-index:41;width:56px;height:56px;border-radius:50%;border:none;background:var(--pink-deep);color:#fff;font-size:30px;font-weight:800;box-shadow:0 8px 20px rgba(0,0,0,.25);cursor:pointer;line-height:1}
 #addEventBtn:active{transform:scale(.94)}
@@ -379,7 +381,7 @@ footer.note{text-align:center;color:var(--sub);font-size:11px;margin-top:18px;fo
     </div>
   </div>
 
-  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v3</span></footer>
+  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v4</span></footer>
 </div>
 
 <!-- 日モーダル -->
@@ -438,6 +440,11 @@ footer.note{text-align:center;color:var(--sub);font-size:11px;margin-top:18px;fo
     <div class="ev-dates">
       <input type="date" id="evStart"><span style="font-weight:800;color:var(--sub)">〜</span><input type="date" id="evEnd">
     </div>
+    <h4>📍 場所（地図）</h4>
+    <input type="text" id="evPlace" class="ev-text" placeholder="例：広島大学病院、○○美容院" maxlength="60">
+    <p class="hint" style="margin:6px 0 0">場所を入れると、日の画面に「📍地図」ボタンが出て、地図アプリで開けます。</p>
+    <h4>📝 メモ</h4>
+    <textarea id="evMemo" class="ev-text" placeholder="持ち物、集合時間、予約番号など…" maxlength="500"></textarea>
     <div class="sheet-btns">
       <button class="clear" id="evDeleteBtn">削除</button>
       <button class="clear" id="evCancelBtn" style="color:var(--sub)">やめる</button>
@@ -707,6 +714,14 @@ function openSheet(k){
     const pd = e.start===e.end ? "" : fmtJP(parseKey(e.start))+"〜"+fmtJP(parseKey(e.end));
     row.innerHTML = '<span class="evt-ic-lg">'+iconHTML(e.icon)+'</span><span class="tt"></span>'+(pd?'<span class="pd">'+pd+'</span>':'');
     row.querySelector(".tt").textContent = e.title;
+    if(e.place){
+      const a = document.createElement("a");
+      a.className = "ev-map"; a.textContent = "📍地図";
+      a.href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(e.place);
+      a.target = "_blank"; a.rel = "noopener";
+      a.addEventListener("click", ev=>ev.stopPropagation());
+      row.appendChild(a);
+    }
     row.addEventListener("click", ()=>openEventEditor({event:e}));
     sev.appendChild(row);
   });
@@ -782,7 +797,7 @@ $("addCustomBtn").addEventListener("click", ()=>{
 /* ===== スタンプ（オリジナルアイコン）と予定 ===== */
 const FACE_EYES = '<circle cx="19" cy="27" r="1.9" fill="#4a3540"/><circle cx="29" cy="27" r="1.9" fill="#4a3540"/><path d="M21 32.5q3 2.6 6 0" stroke="#4a3540" stroke-width="1.8" fill="none" stroke-linecap="round"/><ellipse cx="15.3" cy="31" rx="2.5" ry="1.6" fill="#ffb3c9" opacity=".85"/><ellipse cx="32.7" cy="31" rx="2.5" ry="1.6" fill="#ffb3c9" opacity=".85"/>';
 const STAMPS = [
-  {id:"st-hospital", name:"病院", color:"#4a7dd4", svg:'<svg viewBox="0 0 48 48"><rect x="5" y="5" width="38" height="38" rx="11" fill="#4a7dd4"/><path d="M20 12h8v8h8v8h-8v8h-8v-8h-8v-8h8z" fill="#fff"/></svg>'},
+  {id:"st-hospital", name:"病院", color:"#4a7dd4", svg:'<svg viewBox="0 0 48 48"><rect x="11" y="8" width="26" height="35" rx="2.5" fill="#f7fafc" stroke="#b9c6d8" stroke-width="2"/><rect x="19" y="3.5" width="10" height="7" rx="1.5" fill="#f7fafc" stroke="#b9c6d8" stroke-width="2"/><path d="M21.8 13h4.4v3.4h3.4v4.4h-3.4v3.4h-4.4v-3.4h-3.4v-4.4h3.4z" fill="#e5395f"/><rect x="14.5" y="27" width="4.6" height="4.6" rx="1" fill="#a9c6e8"/><rect x="28.9" y="27" width="4.6" height="4.6" rx="1" fill="#a9c6e8"/><rect x="21" y="33" width="6" height="10" rx="1" fill="#8fb0d8"/></svg>'},
   {id:"st-beauty", name:"美容院", color:"#f4528b", svg:'<svg viewBox="0 0 48 48"><circle cx="14" cy="34" r="6.5" fill="none" stroke="#f4528b" stroke-width="3.6"/><circle cx="14" cy="14" r="6.5" fill="none" stroke="#f4528b" stroke-width="3.6"/><path d="M19.5 17.5 L41 33 M19.5 30.5 L41 15" stroke="#f4528b" stroke-width="3.6" stroke-linecap="round"/></svg>'},
   {id:"st-yusho", name:"勇翔", color:"#4a7dd4", svg:'<svg viewBox="0 0 48 48"><circle cx="24" cy="25" r="14" fill="#ffe3c9"/><path d="M10 24a14 14 0 0 1 28 0z" fill="#5a4632"/>'+FACE_EYES+'</svg>'},
   {id:"st-manami", name:"愛海", color:"#f4528b", svg:'<svg viewBox="0 0 48 48"><circle cx="24" cy="23" r="16" fill="#8a5a3b"/><circle cx="24" cy="26" r="12.5" fill="#ffe3c9"/><path d="M11.5 25a12.5 12.5 0 0 1 25 0z" fill="#8a5a3b"/>'+FACE_EYES+'<path d="M33 8l-5-3.4L29.4 10zM35 8l5-3.4L38.6 10z" fill="#f4528b"/><circle cx="34" cy="8.6" r="2.6" fill="#f4528b"/></svg>'},
@@ -822,6 +837,8 @@ function openEventEditor(opts){
   $("evTitle").value = e ? e.title : (evIcon ? iconName(evIcon) : "");
   $("evStart").value = e ? e.start : (opts.date || todayKey);
   $("evEnd").value = e ? e.end : (opts.date || todayKey);
+  $("evPlace").value = e ? (e.place || "") : "";
+  $("evMemo").value = e ? (e.memo || "") : "";
   $("evDeleteBtn").style.display = e ? "" : "none";
   $("evSheetTitle").textContent = e ? "予定を編集" : "予定を追加";
   buildEvPickers();
@@ -852,13 +869,15 @@ function buildEvPickers(){
 $("evSaveBtn").addEventListener("click", ()=>{
   const title = $("evTitle").value.trim();
   if(!title){ toast("タイトルを入れてね ✏"); $("evTitle").focus(); return; }
+  const place = $("evPlace").value.trim();
+  const memo = $("evMemo").value.trim();
   let st = $("evStart").value || todayKey, en = $("evEnd").value || st;
   if(en < st){ const t = st; st = en; en = t; }
   if(evEditId){
     const e = state.events.find(x=>x.id===evEditId);
-    if(e){ e.title = title; e.icon = evIcon; e.color = evColor; e.start = st; e.end = en; }
+    if(e){ e.title = title; e.icon = evIcon; e.color = evColor; e.start = st; e.end = en; e.place = place; e.memo = memo; }
   }else{
-    state.events.push({id:"e"+Date.now().toString(36)+Math.floor(Math.random()*999), title:title, icon:evIcon, color:evColor, start:st, end:en});
+    state.events.push({id:"e"+Date.now().toString(36)+Math.floor(Math.random()*999), title:title, icon:evIcon, color:evColor, start:st, end:en, place:place, memo:memo});
   }
   save(); renderAll(); closeEventEditor();
   if(selectedKey && $("overlay").classList.contains("on")) openSheet(selectedKey);
