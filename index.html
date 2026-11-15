@@ -436,7 +436,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
     </div>
   </div>
 
-  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v22</span></footer>
+  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v23</span></footer>
 </div>
 
 <!-- 設定画面 -->
@@ -819,7 +819,7 @@ $("todoAddBtn").addEventListener("click", ()=>{
     state.todos.push({id:"t"+Date.now().toString(36)+Math.floor(Math.random()*999), text:text, due:due, done:false});
     $("todoInput").value = "";
   }
-  save(); renderAll(); toast("ToDoを保存しました ✓");
+  save(); renderAll();
 });
 $("todoInput").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); $("todoAddBtn").click(); } });
 $("todoDate").addEventListener("change", ()=>{ todoDateTouched = true; });
@@ -1095,7 +1095,6 @@ $("evSaveBtn").addEventListener("click", ()=>{
   }
   save(); renderAll(); closeEventEditor();
   if(selectedKey && $("overlay").classList.contains("on")) openSheet(selectedKey);
-  toast("予定を保存しました 📅");
 });
 $("evDeleteBtn").addEventListener("click", ()=>{
   if(!evEditId) return;
@@ -1211,21 +1210,20 @@ function applyTrayItem(it, key){
   if(it.kind === "stamp" || !it.kind){
     state.events.push({id:"e"+Date.now().toString(36)+Math.floor(Math.random()*999), title:it.name, icon:it.id, color:iconColor(it.id), start:key, end:key, place:"", memo:""});
     save(); renderAll();
-    toast(it.name + " を " + fmtJP(parseKey(key)) + " に入れました 📅");
     return;
   }
   const r = getRec(key);
   if(it.kind === "leave"){
-    if(r.leave === it.value){ r.leave = 0; toast("お休みの記録を取り消しました"); }
-    else { r.leave = it.value; toast(it.value === 1 ? "● 有給（1日）を記録しました 🌿" : it.value === 0.5 ? "◐ 半休を記録しました 🌿" : "◔ 2時間有給を記録しました 🌿"); }
+    if(r.leave === it.value){ r.leave = 0; }
+    else { r.leave = it.value; }
   }else if(it.kind === "period"){
-    if(r.period === it.period){ r.period = ""; toast("生理の記録を取り消しました"); }
-    else { r.period = it.period; toast(it.period === "light" ? "△ 少ない を記録しました 🩸" : "✕ 多い を記録しました 🩸"); }
+    if(r.period === it.period){ r.period = ""; }
+    else { r.period = it.period; }
   }else if(it.kind === "custom"){
     r.customs = r.customs || [];
     const i = r.customs.indexOf(it.id);
-    if(i >= 0){ r.customs.splice(i, 1); toast(it.name + " を取り消しました"); }
-    else { r.customs.push(it.id); toast(it.name + " を記録しました 🎀"); }
+    if(i >= 0){ r.customs.splice(i, 1); }
+    else { r.customs.push(it.id); }
   }
   cleanup(key); save(); renderAll();
 }
