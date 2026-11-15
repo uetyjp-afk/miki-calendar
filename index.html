@@ -80,8 +80,8 @@ header.app p{margin:0;color:var(--sub);font-size:10.5px;font-weight:500}
 .day.today .dnum{background:var(--pink);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
 .day.period{background:var(--pink-soft)}
 .day.predicted{background:#fff;border:1.5px dashed #ffb3c9}
-.day .marks{display:flex;flex-wrap:wrap;justify-content:center;gap:1px 3px;margin-top:1px;min-height:17px}
-.mark{font-size:16px;font-weight:800;line-height:1.15}
+.day .marks{display:flex;flex-wrap:wrap;justify-content:center;gap:1px 3px;margin-top:1px;min-height:21px}
+.mark{font-size:20px;font-weight:800;line-height:1.15}
 .mark.light{color:#ff9dbd} .mark.normal{color:var(--pink)} .mark.heavy{color:var(--danger)}
 .mark.leave{color:var(--mint)} .mark.half{color:#7ed3c0}
 .mark.custom{font-size:13px}
@@ -283,7 +283,7 @@ textarea.ev-text{min-height:64px;resize:vertical}
 #stampTray .row{display:flex;gap:2px;overflow-x:auto;max-width:540px;margin:0 auto}
 .tray-item{flex:none;width:56px;border:none;background:none;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 0 2px;border-radius:12px;touch-action:pan-x}
 .tray-item .nm{font-size:9.5px;font-weight:800;color:var(--sub)}
-.tray-ic{display:inline-flex;width:28px;height:28px;align-items:center;justify-content:center}
+.tray-ic{display:inline-flex;width:34px;height:34px;align-items:center;justify-content:center}
 .tray-ic svg{width:100%;height:100%}
 .drag-ghost{position:fixed;z-index:200;width:54px;height:54px;pointer-events:none;transform:translate(-50%,-115%);filter:drop-shadow(0 6px 8px rgba(0,0,0,.3))}
 .drag-ghost svg{width:100%;height:100%}
@@ -310,7 +310,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
 #evTitleIcon{width:42px;height:42px;flex:none;display:flex;align-items:center;justify-content:center;background:var(--pink-soft);border-radius:12px}
 #evTitleIcon svg{width:30px;height:30px}
 .mark{display:inline-block}
-.mark.qtr{font-size:22px}
+.mark.qtr{font-size:20px}
 .mark.grab{outline:2px solid var(--pink-deep);outline-offset:1px;border-radius:50%;transform:scale(1.3)}
 #markMenu{position:fixed;z-index:95;width:196px;background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.28);padding:6px;display:none}
 #markMenu.on{display:block}
@@ -436,7 +436,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
     </div>
   </div>
 
-  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v21</span></footer>
+  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v22</span></footer>
 </div>
 
 <!-- 設定画面 -->
@@ -635,9 +635,12 @@ function predictedKeys(){
 function leaveUsed(){
   return Object.values(state.days).reduce((s,d)=>s+(d && d.leave ? Number(d.leave):0),0);
 }
+function svgSt(px){ return px ? ' style="display:block;width:' + px + 'px;height:' + px + 'px"' : ' style="display:block"'; }
+function ringSVG(c){ return '<circle cx="50" cy="50" r="40" fill="none" stroke="' + c + '" stroke-width="13"/>'; }
+function discSVG(px){ return '<svg viewBox="0 0 100 100" width="1em" height="1em"' + svgSt(px) + '><circle cx="50" cy="50" r="47" fill="#2fbfa5"/></svg>'; }
+function halfSVG(px){ return '<svg viewBox="0 0 100 100" width="1em" height="1em"' + svgSt(px) + '>' + ringSVG('#57c9ae') + '<path d="M50 50 L50 10 A40 40 0 0 0 50 90 Z" fill="#57c9ae"/></svg>'; }
 function qtrSVG(px){
-  const st = px ? ' style="display:block;width:' + px + 'px;height:' + px + 'px"' : ' style="display:block"';
-  return '<svg viewBox="0 0 100 100" width="1em" height="1em"' + st + '><circle cx="50" cy="50" r="40" fill="none" stroke="#5fc3a9" stroke-width="13"/><path d="M50 50 L50 10 A40 40 0 0 1 90 50 Z" fill="#5fc3a9"/></svg>';
+  return '<svg viewBox="0 0 100 100" width="1em" height="1em"' + svgSt(px) + '>' + ringSVG('#5fc3a9') + '<path d="M50 50 L50 10 A40 40 0 0 1 90 50 Z" fill="#5fc3a9"/></svg>';
 }
 function fmtNum(n){ return parseFloat((Math.round(n*4)/4).toFixed(2)).toString(); }
 
@@ -685,8 +688,8 @@ function renderCalendar(){
       if(rec.period==="light") marks+='<span class="mark light" data-mk="period" data-mv="light">△</span>';
       if(rec.period==="normal") marks+='<span class="mark normal" data-mk="period" data-mv="normal">●</span>';
       if(rec.period==="heavy") marks+='<span class="mark heavy" data-mk="period" data-mv="heavy">✕</span>';
-      if(rec.leave===1) marks+='<span class="mark leave" data-mk="leave" data-mv="1">●</span>';
-      if(rec.leave===0.5) marks+='<span class="mark half" data-mk="leave" data-mv="0.5">◐</span>';
+      if(rec.leave===1) marks+='<span class="mark leave" data-mk="leave" data-mv="1">' + discSVG() + '</span>';
+      if(rec.leave===0.5) marks+='<span class="mark half" data-mk="leave" data-mv="0.5">' + halfSVG() + '</span>';
       if(rec.leave===0.25) marks+='<span class="mark qtr" data-mk="leave" data-mv="0.25">' + qtrSVG() + '</span>';
       (rec.customs||[]).forEach(cid=>{
         const c = state.customs.find(x=>x.id===cid);
@@ -1114,13 +1117,13 @@ $("addEventBtn").addEventListener("click", ()=>openEventEditor({date:selKey || t
 function buildTray(){
   const row = $("trayRow"); if(!row) return; row.innerHTML = "";
   const items = [
-    {id:"mk-leave", kind:"leave", value:1, name:"有給", html:'<span style="color:#2fbfa5;font-size:25px;line-height:1;font-weight:800">●</span>'},
-    {id:"mk-half", kind:"leave", value:0.5, name:"半休", html:'<span style="color:#57c9ae;font-size:25px;line-height:1;font-weight:800">◐</span>'},
-    {id:"mk-2h", kind:"leave", value:0.25, name:"2時間", html:qtrSVG(32)},
-    {id:"mk-light", kind:"period", period:"light", name:"少ない", html:'<span style="color:#ff9dbd;font-size:25px;line-height:1;font-weight:800">△</span>'},
-    {id:"mk-heavy", kind:"period", period:"heavy", name:"多い", html:'<span style="color:#e5395f;font-size:25px;line-height:1;font-weight:800">✕</span>'}
+    {id:"mk-leave", kind:"leave", value:1, name:"有給", html:discSVG(34)},
+    {id:"mk-half", kind:"leave", value:0.5, name:"半休", html:halfSVG(34)},
+    {id:"mk-2h", kind:"leave", value:0.25, name:"2時間", html:qtrSVG(34)},
+    {id:"mk-light", kind:"period", period:"light", name:"少ない", html:'<span style="color:#ff9dbd;font-size:32px;line-height:1;font-weight:800">△</span>'},
+    {id:"mk-heavy", kind:"period", period:"heavy", name:"多い", html:'<span style="color:#e5395f;font-size:32px;line-height:1;font-weight:800">✕</span>'}
   ].concat(STAMPS.map(st=>({id:st.id, name:st.name, html:st.svg})))
-   .concat(state.customs.map(c=>({id:c.id, kind:"custom", name:c.name, html:'<span style="color:'+c.color+';font-size:25px;line-height:1">'+c.symbol+'</span>'})));
+   .concat(state.customs.map(c=>({id:c.id, kind:"custom", name:c.name, html:'<span style="color:'+c.color+';font-size:32px;line-height:1">'+c.symbol+'</span>'})));
   items.forEach(it=>{
     const b = document.createElement("button");
     b.type = "button"; b.className = "tray-item";
