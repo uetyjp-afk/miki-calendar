@@ -247,7 +247,7 @@ textarea.ev-text{min-height:64px;resize:vertical}
 .tray-item .nm{font-size:9.5px;font-weight:800;color:var(--sub)}
 .tray-ic{display:inline-flex;width:28px;height:28px}
 .tray-ic svg{width:100%;height:100%}
-.drag-ghost{position:fixed;z-index:200;width:46px;height:46px;pointer-events:none;transform:translate(-50%,-115%);filter:drop-shadow(0 6px 8px rgba(0,0,0,.3))}
+.drag-ghost{position:fixed;z-index:200;width:54px;height:54px;pointer-events:none;transform:translate(-50%,-115%);filter:drop-shadow(0 6px 8px rgba(0,0,0,.3))}
 .drag-ghost svg{width:100%;height:100%}
 .drag-ghost span{font-size:36px;line-height:1}
 #trashZone{position:fixed;left:12px;right:12px;bottom:calc(94px + env(safe-area-inset-bottom));z-index:45;display:none;align-items:center;justify-content:center;height:60px;border:2.5px dashed #e5395f;border-radius:16px;background:rgba(255,240,243,.97);color:#e5395f;font-weight:800;font-size:15px}
@@ -257,6 +257,10 @@ textarea.ev-text{min-height:64px;resize:vertical}
 #settingsBtn svg{width:100%;height:100%;display:block}
 #settingsBtn:active{transform:scale(.93)}
 #settingsOverlay .section{box-shadow:none;border:2px solid var(--line)}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea{-webkit-user-select:text;user-select:text}
+.tray-item.grab{background:var(--pink-soft);transform:scale(1.14)}
+.evt.grab{outline:2px solid var(--pink-deep);outline-offset:1px;transform:scale(1.07)}
 .toast{
   position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;
   padding:11px 20px;border-radius:99px;font-size:13.5px;font-weight:700;z-index:99;transition:.3s;opacity:0;pointer-events:none;
@@ -351,7 +355,7 @@ textarea.ev-text{min-height:64px;resize:vertical}
     </div>
   </div>
 
-  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v7</span></footer>
+  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v8</span></footer>
 </div>
 
 <!-- 設定画面 -->
@@ -944,18 +948,25 @@ let suppressTrayClick = 0;
 function attachDrag(el, it){
   el.addEventListener("pointerdown", e=>{
     const sx = e.clientX, sy = e.clientY;
-    dragCtx = {it:it, started:false, dead:false, ghost:null, hl:null};
+    el.classList.add("grab");
+    const g0 = document.createElement("div");
+    g0.className = "drag-ghost"; g0.innerHTML = it.html;
+    g0.style.left = sx + "px"; g0.style.top = sy + "px";
+    document.body.appendChild(g0);
+    dragCtx = {it:it, started:false, dead:false, ghost:g0, hl:null};
     const move = ev=>{
       if(!dragCtx || dragCtx.dead) return;
       const dx = ev.clientX - sx, dy = ev.clientY - sy;
       if(!dragCtx.started){
-        if(dy < -12 && Math.abs(dy) > Math.abs(dx)){
+        if(Math.abs(dx) > 26 && Math.abs(dx) > Math.abs(dy)){
+          dragCtx.dead = true;
+          if(dragCtx.ghost) dragCtx.ghost.remove();
+          el.classList.remove("grab");
+          return;
+        }
+        if(Math.hypot(dx, dy) > 10){
           dragCtx.started = true;
-          const g = document.createElement("div");
-          g.className = "drag-ghost"; g.innerHTML = it.html;
-          document.body.appendChild(g); dragCtx.ghost = g;
-        }else if(Math.abs(dx) > 26 && Math.abs(dx) > Math.abs(dy)){
-          dragCtx.dead = true; return;
+          try{ if(navigator.vibrate) navigator.vibrate(8); }catch(err){}
         }else return;
       }
       dragCtx.ghost.style.left = ev.clientX + "px";
@@ -973,6 +984,7 @@ function attachDrag(el, it){
       if(!dragCtx) return;
       const wasDrag = dragCtx.started, cell = dragCtx.hl;
       if(wasDrag){ suppressTrayClick = Date.now(); }
+      el.classList.remove("grab");
       if(dragCtx.ghost) dragCtx.ghost.remove();
       if(dragCtx.hl) dragCtx.hl.classList.remove("drop-hl");
       dragCtx = null;
@@ -994,20 +1006,24 @@ function attachDrag(el, it){
 
 
 /* 予定チップのドラッグ移動・削除 */
+document.addEventListener("contextmenu", e=>{ if(e.target.closest && e.target.closest(".day,.tray-item,.evt")) e.preventDefault(); });
 let chipDrag = null, suppressCellClick = 0;
 function attachChipDrag(chip, e, dayKey){
   chip.addEventListener("pointerdown", ev=>{
     const sx = ev.clientX, sy = ev.clientY;
-    chipDrag = {e:e, fromDay:dayKey, started:false, ghost:null, hl:null, onTrash:false};
+    chip.classList.add("grab");
+    const g0 = document.createElement("div");
+    g0.className = "drag-ghost"; g0.innerHTML = iconHTML(e.icon) || '<span style="font-size:36px">📅</span>';
+    g0.style.left = sx + "px"; g0.style.top = sy + "px";
+    document.body.appendChild(g0);
+    chipDrag = {e:e, fromDay:dayKey, started:false, ghost:g0, hl:null, onTrash:false};
     const move = mv=>{
       if(!chipDrag) return;
       const dx = mv.clientX - sx, dy = mv.clientY - sy;
       if(!chipDrag.started){
         if(Math.hypot(dx, dy) > 12){
           chipDrag.started = true;
-          const g = document.createElement("div");
-          g.className = "drag-ghost"; g.innerHTML = iconHTML(e.icon) || '<span style="font-size:36px">📅</span>';
-          document.body.appendChild(g); chipDrag.ghost = g;
+          try{ if(navigator.vibrate) navigator.vibrate(8); }catch(err){}
           $("trashZone").classList.add("on");
         } else return;
       }
@@ -1031,6 +1047,7 @@ function attachChipDrag(chip, e, dayKey){
       if(!chipDrag) return;
       const was = chipDrag.started, cell = chipDrag.hl, onTrash = chipDrag.onTrash;
       const ev2 = chipDrag.e, fromDay = chipDrag.fromDay;
+      chip.classList.remove("grab");
       if(chipDrag.ghost) chipDrag.ghost.remove();
       if(chipDrag.hl) chipDrag.hl.classList.remove("drop-hl");
       $("trashZone").classList.remove("on"); $("trashZone").classList.remove("hot");
