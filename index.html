@@ -435,7 +435,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
     </div>
   </div>
 
-  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v17</span></footer>
+  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v18</span></footer>
 </div>
 
 <!-- 設定画面 -->
@@ -1127,6 +1127,14 @@ function buildTray(){
 }
 let dragCtx = null;
 let suppressTrayClick = 0;
+/* ドラッグ中は、指の位置ではなく、浮いているアイコン（指の少し上に表示）の中心で日付を判定する */
+function aimPoint(ghost, x, y){
+  if(ghost){
+    const r = ghost.getBoundingClientRect();
+    if(r.width) return {x: r.left + r.width/2, y: r.top + r.height/2};
+  }
+  return {x: x, y: y};
+}
 function attachDrag(el, it){
   el.addEventListener("pointerdown", e=>{
     const sx = e.clientX, sy = e.clientY;
@@ -1153,7 +1161,8 @@ function attachDrag(el, it){
       }
       dragCtx.ghost.style.left = ev.clientX + "px";
       dragCtx.ghost.style.top = ev.clientY + "px";
-      const under = document.elementFromPoint(ev.clientX, ev.clientY);
+      const aim = aimPoint(dragCtx.ghost, ev.clientX, ev.clientY);
+      const under = document.elementFromPoint(aim.x, aim.y);
       const cell = under && under.closest ? under.closest(".day") : null;
       if(dragCtx.hl && dragCtx.hl !== cell) dragCtx.hl.classList.remove("drop-hl");
       if(cell) cell.classList.add("drop-hl");
@@ -1328,14 +1337,15 @@ function attachMarkPress(el, key){
       }
       ghost.style.left = mv2.clientX + "px";
       ghost.style.top = mv2.clientY + "px";
-      const under = document.elementFromPoint(mv2.clientX, mv2.clientY);
+      const aim = aimPoint(ghost, mv2.clientX, mv2.clientY);
+      const under = document.elementFromPoint(aim.x, aim.y);
       const cell = under && under.closest ? under.closest(".day") : null;
       const tz = under && under.closest ? under.closest("#trashZone") : null;
       if(hl && hl !== cell) hl.classList.remove("drop-hl");
       if(cell) cell.classList.add("drop-hl");
       hl = cell;
       const tzr = $("trashZone").getBoundingClientRect();
-      onTrash = !!tz || (mv2.clientY >= tzr.top - 8 && mv2.clientY <= tzr.bottom + 20);
+      onTrash = !!tz || (aim.y >= tzr.top - 20 && aim.y <= tzr.bottom + 24);
       $("trashZone").classList.toggle("hot", onTrash);
     };
     const up = ()=>{
@@ -1397,14 +1407,15 @@ function attachChipDrag(chip, e, dayKey){
       }
       ghost.style.left = mv.clientX + "px";
       ghost.style.top = mv.clientY + "px";
-      const under = document.elementFromPoint(mv.clientX, mv.clientY);
+      const aim = aimPoint(ghost, mv.clientX, mv.clientY);
+      const under = document.elementFromPoint(aim.x, aim.y);
       const cell = under && under.closest ? under.closest(".day") : null;
       const tz = under && under.closest ? under.closest("#trashZone") : null;
       if(hl && hl !== cell) hl.classList.remove("drop-hl");
       if(cell) cell.classList.add("drop-hl");
       hl = cell;
       const tzr = $("trashZone").getBoundingClientRect();
-      onTrash = !!tz || (mv.clientY >= tzr.top - 8 && mv.clientY <= tzr.bottom + 20);
+      onTrash = !!tz || (aim.y >= tzr.top - 20 && aim.y <= tzr.bottom + 24);
       $("trashZone").classList.toggle("hot", onTrash);
     };
     const up = ()=>{
