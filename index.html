@@ -436,7 +436,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
     </div>
   </div>
 
-  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v25</span></footer>
+  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v26</span></footer>
 </div>
 
 <!-- 設定画面 -->
@@ -953,7 +953,7 @@ function changeMonth(delta){
 }
 $("prevBtn").addEventListener("click", ()=>changeMonth(-1));
 $("nextBtn").addEventListener("click", ()=>changeMonth(1));
-$("todayBtn").addEventListener("click", ()=>{ viewYear=today.getFullYear(); viewMonth=today.getMonth(); renderCalendar(); renderData(); });
+$("todayBtn").addEventListener("click", ()=>{ viewYear=today.getFullYear(); viewMonth=today.getMonth(); selKey=todayKey; lastDayKey=todayKey; renderCalendar(); renderData(); });
 /* 左右スワイプで月移動 */
 let swipeX = null, swipeY = null;
 const calCardEl = document.querySelector(".cal-card");
