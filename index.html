@@ -26,7 +26,7 @@ body{
   min-height:100vh;
 }
 .wrap{max-width:540px;margin:0 auto;padding:14px 12px 130px}
-header.app{text-align:center;padding:8px 0 2px}
+header.app{text-align:center;padding:8px 0 2px;position:relative}
 header.app h1{font-size:23px;margin:0;font-weight:800;letter-spacing:.02em}
 header.app h1 .heart{color:var(--pink-deep)}
 header.app p{margin:2px 0 0;color:var(--sub);font-size:12px;font-weight:500}
@@ -253,6 +253,10 @@ textarea.ev-text{min-height:64px;resize:vertical}
 #trashZone{position:fixed;left:12px;right:12px;bottom:calc(94px + env(safe-area-inset-bottom));z-index:45;display:none;align-items:center;justify-content:center;height:54px;border:2.5px dashed #e5395f;border-radius:16px;background:rgba(255,240,243,.97);color:#e5395f;font-weight:800;font-size:15px}
 #trashZone.on{display:flex}
 #trashZone.hot{background:#e5395f;color:#fff;border-style:solid}
+#settingsBtn{position:absolute;right:2px;top:0;width:44px;height:44px;border:none;border-radius:50%;background:#fff;box-shadow:var(--shadow);cursor:pointer;padding:9px}
+#settingsBtn svg{width:100%;height:100%;display:block}
+#settingsBtn:active{transform:scale(.93)}
+#settingsOverlay .section{box-shadow:none;border:2px solid var(--line)}
 .toast{
   position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;
   padding:11px 20px;border-radius:99px;font-size:13.5px;font-weight:700;z-index:99;transition:.3s;opacity:0;pointer-events:none;
@@ -264,6 +268,7 @@ textarea.ev-text{min-height:64px;resize:vertical}
 <body>
 <div class="wrap">
   <header class="app">
+    <button id="settingsBtn" aria-label="設定を開く"><svg viewBox="0 0 48 48"><g fill="#a87f96"><rect x="21.6" y="2.5" width="4.8" height="11" rx="2.2"/><rect x="21.6" y="2.5" width="4.8" height="11" rx="2.2" transform="rotate(45 24 24)"/><rect x="21.6" y="2.5" width="4.8" height="11" rx="2.2" transform="rotate(90 24 24)"/><rect x="21.6" y="2.5" width="4.8" height="11" rx="2.2" transform="rotate(135 24 24)"/><rect x="21.6" y="2.5" width="4.8" height="11" rx="2.2" transform="rotate(180 24 24)"/><rect x="21.6" y="2.5" width="4.8" height="11" rx="2.2" transform="rotate(225 24 24)"/><rect x="21.6" y="2.5" width="4.8" height="11" rx="2.2" transform="rotate(270 24 24)"/><rect x="21.6" y="2.5" width="4.8" height="11" rx="2.2" transform="rotate(315 24 24)"/><circle cx="24" cy="24" r="12.2"/><circle cx="24" cy="24" r="5.4" fill="#ffffff"/></g></svg></button>
     <h1>🌸 みきのマイカレンダー <span class="heart">♡</span></h1>
     <p>生理とお休みを、かわいく記録しよう</p>
   </header>
@@ -346,6 +351,12 @@ textarea.ev-text{min-height:64px;resize:vertical}
     </div>
   </div>
 
+  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v6</span></footer>
+</div>
+
+<!-- 設定画面 -->
+<div class="overlay" id="settingsOverlay" style="z-index:55">
+  <div class="sheet" style="max-height:94vh">
   <!-- マイ項目 -->
   <div class="section">
     <h3>🎀 マイ項目をふやす</h3>
@@ -383,8 +394,10 @@ textarea.ev-text{min-height:64px;resize:vertical}
       <input type="file" id="importFile" accept=".json,application/json" style="display:none">
     </div>
   </div>
-
-  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v5</span></footer>
+    <div class="sheet-btns">
+      <button class="close" id="closeSettingsBtn">閉じる ♡</button>
+    </div>
+  </div>
 </div>
 
 <!-- 日モーダル -->
@@ -696,7 +709,7 @@ function openSheet(k){
     b.classList.toggle("sel-leave", Number(b.dataset.leave) === Number(rec.leave||0));
   });
   const chips = $("customChips"); chips.innerHTML="";
-  if(!state.customs.length) chips.innerHTML = '<span class="none-msg">マイ項目は下の「マイ項目をふやす」から追加できます</span>';
+  if(!state.customs.length) chips.innerHTML = '<span class="none-msg">マイ項目は右上の ⚙ 設定から追加できます</span>';
   state.customs.forEach(c=>{
     const b = document.createElement("button");
     b.style.color = c.color;
@@ -906,6 +919,9 @@ $("evDeleteBtn").addEventListener("click", ()=>{
 });
 $("evCancelBtn").addEventListener("click", closeEventEditor);
 $("evOverlay").addEventListener("click", e=>{ if(e.target.id==="evOverlay") closeEventEditor(); });
+$("settingsBtn").addEventListener("click", ()=>$("settingsOverlay").classList.add("on"));
+$("closeSettingsBtn").addEventListener("click", ()=>$("settingsOverlay").classList.remove("on"));
+$("settingsOverlay").addEventListener("click", e=>{ if(e.target.id==="settingsOverlay") $("settingsOverlay").classList.remove("on"); });
 $("addEvFromSheet").addEventListener("click", ()=>openEventEditor({date:selectedKey || todayKey}));
 $("addEventBtn").addEventListener("click", ()=>openEventEditor({date:lastDayKey || todayKey}));
 
