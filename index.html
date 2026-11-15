@@ -25,7 +25,7 @@ body{
   background:linear-gradient(180deg,#ffeef5 0%,#fff9f4 55%,#f3fbf8 100%);
   min-height:100vh;
 }
-.wrap{max-width:540px;margin:0 auto;padding:6px 5px 130px}
+.wrap{max-width:540px;margin:0 auto;padding:6px 3px 130px}
 header.app{text-align:center;padding:2px 0 0;position:relative}
 header.app h1{font-size:16.5px;margin:0;font-weight:800;letter-spacing:.02em}
 header.app h1 .heart{color:var(--pink-deep)}
@@ -63,12 +63,12 @@ header.app p{margin:0;color:var(--sub);font-size:10.5px;font-weight:500}
 }
 
 /* カレンダー */
-.cal-card{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:7px 4px 9px;touch-action:pan-y}
+.cal-card{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:7px 2px 9px;touch-action:pan-y}
 .week{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:12px;font-weight:800;color:var(--sub);padding:1px 0 4px}
 .week div:nth-child(1){color:var(--sun)} .week div:nth-child(7){color:var(--sat)}
-.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px 1px}
 .day{
-  position:relative;min-height:96px;min-height:clamp(96px,13dvh,126px);border-radius:10px;padding:4px 2px 3px;cursor:pointer;
+  position:relative;min-height:78px;min-height:clamp(78px,10dvh,94px);border-radius:8px;padding:4px 2px 3px;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;background:#fff;border:1.5px solid #f0d7e2;
   min-width:0;overflow:hidden;
 }
@@ -211,9 +211,9 @@ footer.note{text-align:center;color:var(--sub);font-size:11px;margin-top:18px;fo
 
 /* 予定チップ */
 .day .evts{display:flex;flex-direction:column;gap:2px;width:100%;margin-top:1px}
-.evt{display:flex;align-items:center;gap:2px;touch-action:none;cursor:grab;font-size:10.5px;font-weight:800;line-height:1.3;padding:1px 3px;border-radius:5px;max-width:100%;min-width:0;box-sizing:border-box}
+.evt{display:flex;align-items:center;gap:1px;touch-action:none;cursor:grab;font-size:10.5px;font-weight:800;line-height:1.3;padding:1px 2px;border-radius:5px;max-width:100%;min-width:0;box-sizing:border-box}
 .evt-tt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1}
-.evt-ic{display:inline-flex;width:11px;height:11px;flex:none}
+.evt-ic{display:inline-flex;width:9.5px;height:9.5px;flex:none}
 .evt-ic svg{width:100%;height:100%}
 .evt-ic span{font-size:10px !important}
 .evt.cont-l{border-top-left-radius:0;border-bottom-left-radius:0;margin-left:-7px;padding-left:8px}
@@ -435,7 +435,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
     </div>
   </div>
 
-  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v16</span></footer>
+  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v17</span></footer>
 </div>
 
 <!-- 設定画面 -->
