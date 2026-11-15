@@ -237,6 +237,7 @@ footer.note{text-align:center;color:var(--sub);font-size:11px;margin-top:18px;fo
 .day-detail .dd-main .tt{font-weight:800;font-size:13.5px;white-space:normal;overflow-wrap:anywhere;line-height:1.4}
 .day-detail .dd-sub{font-size:11.5px;color:var(--sub);font-weight:600;overflow-wrap:anywhere;line-height:1.4}
 .day-detail .dd-none{font-size:12.5px;color:var(--sub);font-weight:500;padding:1px 0 7px}
+.dd-sub a,.dd-memo a,.diary-text a{color:#4a7dd4;text-decoration:underline}
 .day-detail .dd-memo{font-size:12.5px;font-weight:600;background:var(--pink-bg);border-radius:10px;padding:7px 10px;margin:0 0 6px;overflow-wrap:anywhere;line-height:1.5}
 /* ToDo */
 .mark.todo-mk{color:#9b8cf2;font-size:13px}
@@ -436,7 +437,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
     </div>
   </div>
 
-  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v26</span></footer>
+  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v27</span></footer>
 </div>
 
 <!-- 設定画面 -->
@@ -744,7 +745,7 @@ function renderDayDetail(){
     const pd = e.start===e.end ? "" : fmtJP(parseKey(e.start))+"〜"+fmtJP(parseKey(e.end));
     row.innerHTML = '<span class="evt-ic-lg">'+iconHTML(e.icon)+'</span><span class="dd-main"><span class="tt"></span>'
       + (e.place ? '<span class="dd-sub">📍'+esc(e.place)+'</span>' : '')
-      + (e.memo ? '<span class="dd-sub">'+esc(e.memo)+'</span>' : '')
+      + (e.memo ? '<span class="dd-sub">'+linkify(e.memo)+'</span>' : '')
       + '</span>' + (pd ? '<span class="pd">'+pd+'</span>' : '');
     row.querySelector(".tt").textContent = e.title;
     row.addEventListener("click", ()=>openEventEditor({event:e}));
@@ -760,7 +761,7 @@ function renderDayDetail(){
   });
   if(!todoDateTouched) $("todoDate").value = k;
   const dm = $("ddMemo");
-  if(rec && rec.memo){ dm.style.display = ""; dm.textContent = "📖 " + rec.memo; }
+  if(rec && rec.memo){ dm.style.display = ""; dm.innerHTML = "📖 " + linkify(rec.memo); }
   else dm.style.display = "none";
 }
 /* ToDo */
@@ -833,7 +834,7 @@ function renderDiary(){
     const d = parseKey(k);
     const row = document.createElement("div"); row.className = "diary-item";
     row.innerHTML = '<div class="diary-date">'+(d.getMonth()+1)+"月"+d.getDate()+"日（"+DOW[d.getDay()]+"）"+'</div><div class="diary-text"></div>';
-    row.querySelector(".diary-text").textContent = state.days[k].memo;
+    row.querySelector(".diary-text").innerHTML = linkify(state.days[k].memo);
     row.addEventListener("click", ()=>{ viewYear = d.getFullYear(); viewMonth = d.getMonth(); selKey = k; lastDayKey = k; renderAll(); window.scrollTo({top:0, behavior:"smooth"}); });
     box.appendChild(row);
   });
@@ -1020,6 +1021,15 @@ const STAMPS = [
 ];
 function stampOf(id){ return STAMPS.find(x=>x.id===id); }
 function esc(t){ return String(t||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+/* メモの中のURL・電話番号をタップできるリンクにする */
+function linkify(text){
+  return String(text || "").split(/(https?:\/\/[^\s<、。・「」『』（）【】)]+)/g).map((part, i)=>{
+    if(i % 2 === 1){ const u = esc(part); return '<a href="' + u + '" target="_blank" rel="noopener">' + u + '</a>'; }
+    return esc(part).replace(/(?<!\d)(0\d{1,4}-\d{1,4}-\d{4}|0\d{9,10})(?!\d)/g, '<a href="tel:$1">$1</a>');
+  }).join("");
+}
+/* メモのリンクをタップしたときは、行をタップした扱いにしない */
+document.addEventListener("click", e=>{ if(e.target.closest && e.target.closest(".dd-sub a, .dd-memo a, .diary-text a")) e.stopPropagation(); }, true);
 function iconHTML(id){
   const st = stampOf(id); if(st) return st.svg;
   const c = state.customs.find(x=>x.id===id);
