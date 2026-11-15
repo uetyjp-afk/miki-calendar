@@ -25,7 +25,7 @@ body{
   background:linear-gradient(180deg,#ffeef5 0%,#fff9f4 55%,#f3fbf8 100%);
   min-height:100vh;
 }
-.wrap{max-width:540px;margin:0 auto;padding:14px 12px 130px}
+.wrap{max-width:540px;margin:0 auto;padding:10px 8px 130px}
 header.app{text-align:center;padding:8px 0 2px;position:relative}
 header.app h1{font-size:23px;margin:0;font-weight:800;letter-spacing:.02em}
 header.app h1 .heart{color:var(--pink-deep)}
@@ -33,25 +33,25 @@ header.app p{margin:2px 0 0;color:var(--sub);font-size:12px;font-weight:500}
 
 /* 有給カード（一番目立つ） */
 .leave-card{
-  margin-top:12px;border-radius:22px;padding:16px 18px 14px;color:#fff;
+  margin-top:10px;border-radius:18px;padding:10px 14px 9px;color:#fff;
   background:linear-gradient(135deg,#25b79b,#57d3ae);
   box-shadow:0 8px 22px rgba(37,183,155,.32);
-  display:flex;align-items:center;gap:14px;
+  display:flex;align-items:center;gap:10px;
 }
 .leave-card.low{background:linear-gradient(135deg,#f08c00,#ffb03a);box-shadow:0 8px 22px rgba(240,140,0,.32)}
 .leave-card.empty{background:linear-gradient(135deg,#e5395f,#ff7a92);box-shadow:0 8px 22px rgba(229,57,95,.32)}
-.leave-card .big{font-size:56px;font-weight:800;line-height:1;text-shadow:0 2px 6px rgba(0,0,0,.12)}
-.leave-card .unit{font-size:20px;font-weight:800}
-.leave-card .lbl{font-size:14px;font-weight:800;opacity:.95}
-.leave-card .sub{font-size:12px;font-weight:500;opacity:.92;margin-top:3px}
+.leave-card .big{font-size:36px;font-weight:800;line-height:1;text-shadow:0 2px 6px rgba(0,0,0,.12)}
+.leave-card .unit{font-size:15px;font-weight:800}
+.leave-card .lbl{font-size:12.5px;font-weight:800;opacity:.95}
+.leave-card .sub{font-size:11px;font-weight:500;opacity:.92;margin-top:2px}
 .leave-card .right{flex:1}
-.bar{height:9px;border-radius:99px;background:rgba(255,255,255,.35);margin-top:9px;overflow:hidden}
+.bar{height:7px;border-radius:99px;background:rgba(255,255,255,.35);margin-top:6px;overflow:hidden}
 .bar i{display:block;height:100%;border-radius:99px;background:#fff;transition:width .4s}
 .leave-warn{font-size:12px;font-weight:800;margin-top:7px;display:none}
 .leave-card.low .leave-warn,.leave-card.empty .leave-warn{display:block}
 
 /* 月ナビ */
-.month-nav{display:flex;align-items:center;justify-content:space-between;margin:18px 2px 8px}
+.month-nav{display:flex;align-items:center;justify-content:space-between;margin:12px 2px 6px}
 .month-nav h2{font-size:20px;margin:0;font-weight:800}
 .nav-btn{
   border:none;background:var(--card);color:var(--pink-deep);width:40px;height:40px;border-radius:50%;
@@ -63,17 +63,17 @@ header.app p{margin:2px 0 0;color:var(--sub);font-size:12px;font-weight:500}
 }
 
 /* カレンダー */
-.cal-card{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:12px 10px 14px;touch-action:pan-y}
-.week{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:12px;font-weight:800;color:var(--sub);padding:2px 0 6px}
+.cal-card{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:9px 6px 11px;touch-action:pan-y}
+.week{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:12px;font-weight:800;color:var(--sub);padding:1px 0 4px}
 .week div:nth-child(1){color:var(--sun)} .week div:nth-child(7){color:var(--sat)}
-.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
 .day{
-  position:relative;min-height:66px;border-radius:14px;padding:4px 2px 3px;cursor:pointer;
+  position:relative;min-height:82px;border-radius:14px;padding:4px 2px 3px;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;background:#fff;border:2px solid transparent;
   min-width:0;overflow:hidden;
 }
 .day:active{transform:scale(.96)}
-.day .dnum{font-size:14px;font-weight:700;line-height:1.15}
+.day .dnum{font-size:15px;font-weight:700;line-height:1.15}
 .day.sun .dnum{color:var(--sun)} .day.sat .dnum{color:var(--sat)}
 .day.other{opacity:.32}
 .day.today{border-color:var(--pink)}
@@ -435,7 +435,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
     </div>
   </div>
 
-  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v14</span></footer>
+  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v15</span></footer>
 </div>
 
 <!-- 設定画面 -->
