@@ -63,20 +63,20 @@ header.app p{margin:0;color:var(--sub);font-size:10.5px;font-weight:500}
 }
 
 /* カレンダー */
-.cal-card{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:7px 2px 9px;touch-action:pan-y}
+.cal-card{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:6px 0 8px;touch-action:pan-y;overflow:hidden}
 .week{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:12px;font-weight:800;color:var(--sub);padding:1px 0 4px}
 .week div:nth-child(1){color:var(--sun)} .week div:nth-child(7){color:var(--sat)}
-.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px 1px}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:0;border-top:1px solid #f0d7e2;border-left:1px solid #f0d7e2}
 .day{
-  position:relative;min-height:78px;min-height:clamp(78px,10dvh,94px);border-radius:8px;padding:4px 2px 3px;cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;background:#fff;border:1.5px solid #f0d7e2;
+  position:relative;min-height:78px;min-height:clamp(78px,10dvh,94px);border-radius:0;padding:4px 2px 3px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;background:#fff;border:none;border-right:1px solid #f0d7e2;border-bottom:1px solid #f0d7e2;
   min-width:0;overflow:hidden;
 }
 .day:active{transform:scale(.96)}
 .day .dnum{font-size:16px;font-weight:800;line-height:1.15}
 .day.sun .dnum{color:var(--sun)} .day.sat .dnum{color:var(--sat)}
 .day.other{opacity:.45;background:#faf5f6}
-.day.today{border-color:var(--pink)}
+.day.today{box-shadow:inset 0 0 0 2px var(--pink)}
 .day.today .dnum{background:var(--pink);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
 .day.period{background:var(--pink-soft)}
 .day.predicted{background:#fff;border:1.5px dashed #ffb3c9}
@@ -87,7 +87,7 @@ header.app p{margin:0;color:var(--sub);font-size:10.5px;font-weight:500}
 .mark.custom{font-size:13px}
 .day .pred-lbl{font-size:8.5px;color:var(--pink-deep);font-weight:800}
 .day .memo-dot{width:5px;height:5px;border-radius:50%;background:var(--lav);margin-top:1px}
-.legend{display:flex;flex-wrap:wrap;gap:5px 12px;justify-content:center;margin-top:8px;font-size:11.5px;color:var(--sub);font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:5px 12px;justify-content:center;margin-top:8px;padding:0 8px;font-size:11.5px;color:var(--sub);font-weight:700}
 .legend b{font-size:13px}
 
 /* データスイッチ */
@@ -435,7 +435,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
     </div>
   </div>
 
-  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v18</span></footer>
+  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v19</span></footer>
 </div>
 
 <!-- 設定画面 -->
@@ -693,7 +693,7 @@ function renderCalendar(){
     let evHtml = "";
     evs.slice(0,2).forEach(e=>{
       const col = e.color || "#f4528b";
-      evHtml += '<div class="evt'+(k>e.start?" cont-l":"")+(k<e.end?" cont-r":"")+'" style="background:'+col+'2b;color:'+col+'"><span class="evt-ic">'+iconHTML(e.icon)+'</span><span class="evt-tt">'+esc(e.title)+'</span></div>';
+      evHtml += '<div class="evt'+(k>e.start?" cont-l":"")+(k<e.end?" cont-r":"")+'" style="background:'+col+'2b;color:'+col+'"><span class="evt-tt">'+esc(e.title)+'</span></div>';
     });
     if(evs.length>2) evHtml += '<div class="evt-more">+'+(evs.length-2)+'件</div>';
     cell.dataset.key = k;
