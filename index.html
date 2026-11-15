@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>みきのマイカレンダー</title>
+<meta name="theme-color" content="#ff8fab">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pink:#ff7aa8; --pink-deep:#f4528b; --pink-soft:#ffe3ee; --pink-bg:#fff6f9;
+  --mint:#2fbfa5; --mint-soft:#dcf7f1; --lav:#9b8cf2; --ink:#4a3540; --sub:#9a7f8c;
+  --sun:#f4526b; --sat:#4a7dd4; --line:#f6dbe6; --warn:#f08c00; --danger:#e5395f;
+  --card:#ffffff; --shadow:0 4px 18px rgba(244,82,139,.12);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN",sans-serif;
+  color:var(--ink);
+  background:linear-gradient(180deg,#ffeef5 0%,#fff9f4 55%,#f3fbf8 100%);
+  min-height:100vh;
+}
+.wrap{max-width:540px;margin:0 auto;padding:14px 12px 40px}
+header.app{text-align:center;padding:8px 0 2px}
+header.app h1{font-size:23px;margin:0;font-weight:800;letter-spacing:.02em}
+header.app h1 .heart{color:var(--pink-deep)}
+header.app p{margin:2px 0 0;color:var(--sub);font-size:12px;font-weight:500}
+
+/* 有給カード（一番目立つ） */
+.leave-card{
+  margin-top:12px;border-radius:22px;padding:16px 18px 14px;color:#fff;
+  background:linear-gradient(135deg,#25b79b,#57d3ae);
+  box-shadow:0 8px 22px rgba(37,183,155,.32);
+  display:flex;align-items:center;gap:14px;
+}
+.leave-card.low{background:linear-gradient(135deg,#f08c00,#ffb03a);box-shadow:0 8px 22px rgba(240,140,0,.32)}
+.leave-card.empty{background:linear-gradient(135deg,#e5395f,#ff7a92);box-shadow:0 8px 22px rgba(229,57,95,.32)}
+.leave-card .big{font-size:56px;font-weight:800;line-height:1;text-shadow:0 2px 6px rgba(0,0,0,.12)}
+.leave-card .unit{font-size:20px;font-weight:800}
+.leave-card .lbl{font-size:14px;font-weight:800;opacity:.95}
+.leave-card .sub{font-size:12px;font-weight:500;opacity:.92;margin-top:3px}
+.leave-card .right{flex:1}
+.bar{height:9px;border-radius:99px;background:rgba(255,255,255,.35);margin-top:9px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:#fff;transition:width .4s}
+.leave-warn{font-size:12px;font-weight:800;margin-top:7px;display:none}
+.leave-card.low .leave-warn,.leave-card.empty .leave-warn{display:block}
+
+/* 月ナビ */
+.month-nav{display:flex;align-items:center;justify-content:space-between;margin:18px 2px 8px}
+.month-nav h2{font-size:20px;margin:0;font-weight:800}
+.nav-btn{
+  border:none;background:var(--card);color:var(--pink-deep);width:40px;height:40px;border-radius:50%;
+  font-size:19px;font-weight:800;box-shadow:var(--shadow);cursor:pointer;
+}
+.today-btn{
+  border:none;background:var(--pink-soft);color:var(--pink-deep);border-radius:99px;
+  padding:9px 15px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;
+}
+
+/* カレンダー */
+.cal-card{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:12px 10px 14px}
+.week{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:12px;font-weight:800;color:var(--sub);padding:2px 0 6px}
+.week div:nth-child(1){color:var(--sun)} .week div:nth-child(7){color:var(--sat)}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.day{
+  position:relative;min-height:58px;border-radius:14px;padding:4px 2px 3px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;background:#fff;border:2px solid transparent;
+}
+.day:active{transform:scale(.96)}
+.day .dnum{font-size:14px;font-weight:700;line-height:1.15}
+.day.sun .dnum{color:var(--sun)} .day.sat .dnum{color:var(--sat)}
+.day.other{opacity:.32}
+.day.today{border-color:var(--pink)}
+.day.today .dnum{background:var(--pink);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.day.period{background:var(--pink-soft)}
+.day.predicted{background:#fff;border:2px dashed #ffb3c9}
+.day .marks{display:flex;flex-wrap:wrap;justify-content:center;gap:1px 3px;margin-top:1px;min-height:17px}
+.mark{font-size:15px;font-weight:800;line-height:1.15}
+.mark.light{color:#ff9dbd} .mark.normal{color:var(--pink)} .mark.heavy{color:var(--danger)}
+.mark.leave{color:var(--mint)} .mark.half{color:#7ed3c0}
+.mark.custom{font-size:13px}
+.day .pred-lbl{font-size:8.5px;color:var(--pink-deep);font-weight:800}
+.day .memo-dot{width:5px;height:5px;border-radius:50%;background:var(--lav);margin-top:1px}
+.legend{display:flex;flex-wrap:wrap;gap:5px 12px;justify-content:center;margin-top:11px;font-size:11.5px;color:var(--sub);font-weight:700}
+.legend b{font-size:13px}
+
+/* データスイッチ */
+.switch-row{
+  margin-top:16px;background:var(--card);border-radius:18px;box-shadow:var(--shadow);
+  padding:13px 16px;display:flex;align-items:center;justify-content:space-between;
+}
+.switch-row .t{font-weight:800;font-size:15px}
+.switch-row .s{font-size:11.5px;color:var(--sub);font-weight:500}
+.switch{position:relative;width:54px;height:30px;flex:none}
+.switch input{opacity:0;width:0;height:0}
+.switch .tr{position:absolute;inset:0;border-radius:99px;background:#ecdde4;transition:.25s;cursor:pointer}
+.switch .tr:before{content:"";position:absolute;width:24px;height:24px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.25s;box-shadow:0 2px 5px rgba(0,0,0,.18)}
+.switch input:checked + .tr{background:var(--pink)}
+.switch input:checked + .tr:before{transform:translateX(24px)}
+
+/* データパネル */
+.data-panel{margin-top:12px;display:none}
+.data-panel.on{display:block}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:12px 14px}
+.stat .k{font-size:11.5px;color:var(--sub);font-weight:800}
+.stat .v{font-size:24px;font-weight:800;margin-top:2px}
+.stat .v small{font-size:13px}
+.stat .note{font-size:11px;color:var(--sub);font-weight:500}
+.stat.hero{grid-column:1/-1;background:linear-gradient(135deg,#ff8fab,#ffb3c9);color:#fff;text-align:center;padding:15px}
+.stat.hero .k{color:rgba(255,255,255,.9)}
+.stat.hero .v{font-size:34px}
+.stat.hero .note{color:rgba(255,255,255,.9)}
+.pred-row{margin-top:10px;background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:11px 14px;font-size:12.5px;font-weight:500;color:var(--sub);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pred-row .t{font-weight:800;color:var(--ink);font-size:13.5px}
+
+/* セクション共通 */
+.section{margin-top:16px;background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:15px 16px}
+.section h3{margin:0 0 4px;font-size:16px;font-weight:800}
+.section .hint{font-size:12px;color:var(--sub);font-weight:500;margin:0 0 10px}
+.custom-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.custom-item{display:flex;align-items:center;gap:10px;background:var(--pink-bg);border-radius:14px;padding:8px 12px}
+.custom-item .sym{font-size:19px;font-weight:800;width:26px;text-align:center}
+.custom-item .nm{flex:1;font-weight:700;font-size:14px}
+.custom-item .del{border:none;background:none;color:var(--sub);font-size:16px;cursor:pointer;padding:4px}
+.add-form{display:flex;flex-direction:column;gap:9px}
+.add-form input[type=text]{
+  border:2px solid var(--line);border-radius:12px;padding:10px 12px;font-family:inherit;font-size:15px;font-weight:500;width:100%;background:#fff;color:var(--ink);
+}
+.add-form input[type=text]:focus{outline:none;border-color:var(--pink)}
+.sym-picker,.color-picker{display:flex;flex-wrap:wrap;gap:6px}
+.sym-picker button,.color-picker button{
+  border:2px solid var(--line);background:#fff;border-radius:11px;cursor:pointer;font-family:inherit;
+}
+.sym-picker button{width:40px;height:40px;font-size:17px}
+.color-picker button{width:34px;height:34px;border-radius:50%}
+.sym-picker button.sel,.color-picker button.sel{border-color:var(--pink-deep);transform:scale(1.08)}
+.picker-lbl{font-size:11.5px;font-weight:800;color:var(--sub)}
+.add-btn{
+  border:none;background:var(--pink);color:#fff;border-radius:99px;padding:12px;font-family:inherit;
+  font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 5px 14px rgba(244,82,139,.3);
+}
+.add-btn:active{transform:scale(.98)}
+
+/* 設定 */
+.set-row{display:flex;align-items:center;gap:10px;margin:8px 0}
+.set-row label{flex:1;font-weight:700;font-size:14px}
+.set-row input[type=number]{
+  width:84px;border:2px solid var(--line);border-radius:12px;padding:9px;font-family:inherit;
+  font-size:16px;font-weight:800;text-align:center;color:var(--ink);
+}
+.set-row input[type=number]:focus{outline:none;border-color:var(--pink)}
+.backup-btns{display:flex;gap:9px;margin-top:6px}
+.backup-btns button{
+  flex:1;border:2px solid var(--pink-soft);background:#fff;color:var(--pink-deep);border-radius:99px;
+  padding:10px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;
+}
+footer.note{text-align:center;color:var(--sub);font-size:11px;margin-top:18px;font-weight:500;line-height:1.7}
+
+/* 日モーダル */
+.overlay{
+  position:fixed;inset:0;background:rgba(74,40,56,.45);display:none;z-index:50;
+  align-items:flex-end;justify-content:center;
+}
+.overlay.on{display:flex}
+.sheet{
+  background:#fff;width:100%;max-width:540px;max-height:88vh;overflow-y:auto;
+  border-radius:26px 26px 0 0;padding:18px 18px calc(20px + env(safe-area-inset-bottom));
+  animation:up .22s ease;
+}
+@keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
+.sheet h3{margin:0;font-size:19px;font-weight:800}
+.sheet .dow{color:var(--sub);font-size:13px;font-weight:700}
+.sheet h4{margin:16px 0 7px;font-size:13.5px;font-weight:800;color:var(--pink-deep)}
+.seg{display:flex;gap:7px;flex-wrap:wrap}
+.seg button{
+  flex:1;min-width:70px;border:2px solid var(--line);background:#fff;border-radius:14px;padding:10px 4px;
+  font-family:inherit;font-size:14px;font-weight:800;color:var(--ink);cursor:pointer;
+}
+.seg button small{display:block;font-size:11px;color:var(--sub);font-weight:700}
+.seg button.sel-period{background:var(--pink-soft);border-color:var(--pink-deep);color:var(--pink-deep)}
+.seg button.sel-leave{background:var(--mint-soft);border-color:var(--mint);color:#12836c}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chips button{
+  border:2px solid var(--line);background:#fff;border-radius:99px;padding:8px 13px;cursor:pointer;
+  font-family:inherit;font-size:13.5px;font-weight:800;color:var(--ink);
+}
+.chips button.sel{border-color:currentColor;background:var(--pink-bg)}
+.chips .none-msg{font-size:12.5px;color:var(--sub);font-weight:500}
+.sheet textarea{
+  width:100%;border:2px solid var(--line);border-radius:14px;padding:10px 12px;font-family:inherit;
+  font-size:14.5px;min-height:58px;resize:vertical;color:var(--ink);
+}
+.sheet textarea:focus{outline:none;border-color:var(--pink)}
+.sheet-btns{display:flex;gap:9px;margin-top:18px}
+.sheet-btns .close{
+  flex:1;border:none;background:var(--pink);color:#fff;border-radius:99px;padding:13px;
+  font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;
+}
+.sheet-btns .clear{
+  border:2px solid var(--line);background:#fff;color:var(--danger);border-radius:99px;padding:13px 16px;
+  font-family:inherit;font-size:13.5px;font-weight:800;cursor:pointer;
+}
+.auto-note{text-align:center;font-size:11px;color:var(--sub);margin-top:9px;font-weight:500}
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;
+  padding:11px 20px;border-radius:99px;font-size:13.5px;font-weight:700;z-index:99;transition:.3s;opacity:0;pointer-events:none;
+  max-width:88vw;text-align:center;
+}
+.toast.on{transform:translateX(-50%);opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="app">
+    <h1>🌸 みきのマイカレンダー <span class="heart">♡</span></h1>
+    <p>生理とお休みを、かわいく記録しよう</p>
+  </header>
+
+  <!-- 有給残数（目立つ表示） -->
+  <div class="leave-card" id="leaveCard">
+    <div>
+      <div class="lbl">○ 有給残り</div>
+      <div><span class="big" id="leaveRemain">-</span><span class="unit"> 日</span></div>
+    </div>
+    <div class="right">
+      <div class="sub" id="leaveSub">全 - 日 ・ 使った - 日</div>
+      <div class="bar"><i id="leaveBar" style="width:100%"></i></div>
+      <div class="leave-warn" id="leaveWarn">⚠ 有給が少なくなってきたよ</div>
+    </div>
+  </div>
+
+  <!-- 月ナビ -->
+  <div class="month-nav">
+    <button class="nav-btn" id="prevBtn" aria-label="前の月">‹</button>
+    <h2 id="monthTitle">-</h2>
+    <button class="today-btn" id="todayBtn">今日</button>
+    <button class="nav-btn" id="nextBtn" aria-label="次の月">›</button>
+  </div>
+
+  <!-- カレンダー -->
+  <div class="cal-card">
+    <div class="week"><div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div></div>
+    <div class="grid" id="calGrid"></div>
+    <div class="legend">
+      <span><b style="color:#ff9dbd">△</b> 生理・少ない</span>
+      <span><b style="color:#ff7aa8">●</b> ふつう</span>
+      <span><b style="color:#e5395f">✕</b> 多い</span>
+      <span><b style="color:#2fbfa5">○</b> 有給</span>
+      <span><b style="color:#7ed3c0">◐</b> 半日有給</span>
+    </div>
+  </div>
+
+  <!-- データスイッチ -->
+  <div class="switch-row">
+    <div>
+      <div class="t">📊 データを見る</div>
+      <div class="s">前回の生理から何日目か・次回予測など</div>
+    </div>
+    <label class="switch"><input type="checkbox" id="dataToggle"><span class="tr"></span></label>
+  </div>
+
+  <!-- データパネル -->
+  <div class="data-panel" id="dataPanel">
+    <div class="stat-grid">
+      <div class="stat hero">
+        <div class="k">前回の生理から</div>
+        <div class="v" id="statCycleDay">-</div>
+        <div class="note" id="statCycleNote">生理を記録すると出てくるよ</div>
+      </div>
+      <div class="stat">
+        <div class="k">前回の生理開始</div>
+        <div class="v" id="statLastStart" style="font-size:20px">-</div>
+        <div class="note" id="statLastDur"></div>
+      </div>
+      <div class="stat">
+        <div class="k">平均周期</div>
+        <div class="v" id="statAvgCycle">-</div>
+        <div class="note" id="statAvgNote"></div>
+      </div>
+      <div class="stat">
+        <div class="k">次回の予測</div>
+        <div class="v" id="statNext" style="font-size:20px">-</div>
+        <div class="note">カレンダーに薄ピンクの点線で表示</div>
+      </div>
+      <div class="stat">
+        <div class="k">今月の記録</div>
+        <div class="v" id="statMonth" style="font-size:17px;line-height:1.5">-</div>
+        <div class="note"></div>
+      </div>
+    </div>
+    <div class="pred-row">
+      <span class="t">🔮 次回予測をカレンダーに出す</span>
+      <label class="switch"><input type="checkbox" id="predToggle" checked><span class="tr"></span></label>
+    </div>
+  </div>
+
+  <!-- マイ項目 -->
+  <div class="section">
+    <h3>🎀 マイ項目をふやす</h3>
+    <p class="hint">好きな項目を作ると、カレンダーの日を押したときに選べるようになるよ。あとからいつでも追加・削除できます。</p>
+    <div class="custom-list" id="customList"></div>
+    <div class="add-form">
+      <input type="text" id="newName" placeholder="項目の名前（例：病院、旅行、おでかけ）" maxlength="12">
+      <div class="picker-lbl">マーク</div>
+      <div class="sym-picker" id="symPicker"></div>
+      <div class="picker-lbl">色</div>
+      <div class="color-picker" id="colorPicker"></div>
+      <button class="add-btn" id="addCustomBtn">＋ 項目を追加する</button>
+    </div>
+  </div>
+
+  <!-- 設定 -->
+  <div class="section">
+    <h3>⚙ 設定・バックアップ</h3>
+    <div class="set-row">
+      <label for="paidTotalInput">○ 有給の付与日数（全部で何日？）</label>
+      <input type="number" id="paidTotalInput" min="0" max="60" step="0.5">
+    </div>
+    <p class="hint">有給（○）や半日有給（◐）を入れるたびに、上の「有給残り」が自動で減ります。付与日数が増えたらここを直してね。</p>
+    <div class="backup-btns">
+      <button id="exportBtn">💾 バックアップ保存</button>
+      <button id="importBtn">📂 バックアップ読込</button>
+      <input type="file" id="importFile" accept=".json,application/json" style="display:none">
+    </div>
+  </div>
+
+  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v1</span></footer>
+</div>
+
+<!-- 日モーダル -->
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <h3><span id="sheetDate">-</span> <span class="dow" id="sheetDow"></span></h3>
+
+    <h4>🩸 生理</h4>
+    <div class="seg" id="periodSeg">
+      <button data-period="">なし</button>
+      <button data-period="light"><span style="color:#ff9dbd;font-size:17px">△</span><small>少ない</small></button>
+      <button data-period="normal"><span style="color:#ff7aa8;font-size:17px">●</span><small>ふつう</small></button>
+      <button data-period="heavy"><span style="color:#e5395f;font-size:17px">✕</span><small>多い</small></button>
+    </div>
+
+    <h4>🌿 お休み</h4>
+    <div class="seg" id="leaveSeg">
+      <button data-leave="0">なし</button>
+      <button data-leave="1"><span style="color:#2fbfa5;font-size:17px">○</span><small>有給（1日）</small></button>
+      <button data-leave="0.5"><span style="color:#7ed3c0;font-size:17px">◐</span><small>半日有給</small></button>
+    </div>
+
+    <h4>🎀 マイ項目</h4>
+    <div class="chips" id="customChips"></div>
+
+    <h4>📝 メモ</h4>
+    <textarea id="memoInput" placeholder="体調や予定のメモ…"></textarea>
+
+    <div class="sheet-btns">
+      <button class="clear" id="clearDayBtn">この日を消す</button>
+      <button class="close" id="closeSheetBtn">閉じる ♡</button>
+    </div>
+    <div class="auto-note">選んだら自動で保存されます</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const KEY = "miki-calendar-v1";
+const SYMBOLS = ["★","♥","●","◆","▲","♪","✿","☀","☂","✈","✚","♨","🍰","🛍","💇","🐾","🌙","🎁","🏥","💊"];
+const COLORS  = ["#f4528b","#ff8c42","#f2b705","#2fbfa5","#4a7dd4","#9b8cf2","#e0567a","#8a6d4b","#5aa469","#888"];
+
+let state = load();
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw){ const s = JSON.parse(raw); if(s && s.days && s.customs) return normalize(s); }
+  }catch(e){}
+  return normalize({
+    settings:{ paidTotal:20, showData:true, showPrediction:true },
+    days:{},
+    customs:[
+      {id:"c-hospital", name:"病院", symbol:"✚", color:"#4a7dd4"},
+      {id:"c-trip", name:"旅行・おでかけ", symbol:"✈", color:"#9b8cf2"},
+      {id:"c-beauty", name:"美容院", symbol:"💇", color:"#f4528b"}
+    ]
+  });
+}
+function normalize(s){
+  s.settings = Object.assign({paidTotal:20, showData:true, showPrediction:true}, s.settings||{});
+  s.days = s.days||{}; s.customs = s.customs||[];
+  return s;
+}
+function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+
+/* 日付ユーティリティ（ローカル日付で統一） */
+function dkey(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function parseKey(k){ const [y,m,dd]=k.split("-").map(Number); return new Date(y,m-1,dd); }
+function addDays(d,n){ const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()); x.setDate(x.getDate()+n); return x; }
+function diffDays(a,b){ return Math.round((new Date(b.getFullYear(),b.getMonth(),b.getDate()) - new Date(a.getFullYear(),a.getMonth(),a.getDate()))/86400000); }
+function fmtJP(d){ return (d.getMonth()+1)+"月"+d.getDate()+"日"; }
+const DOW = ["日","月","火","水","木","金","土"];
+const today = new Date(); today.setHours(0,0,0,0);
+const todayKey = dkey(today);
+let viewYear = today.getFullYear(), viewMonth = today.getMonth();
+let selectedKey = null;
+
+/* 生理計算 */
+function periodDays(){
+  return Object.keys(state.days).filter(k=>state.days[k] && state.days[k].period).sort();
+}
+function periodStarts(){
+  const days = periodDays(); const starts=[];
+  for(const k of days){
+    const prev = dkey(addDays(parseKey(k),-1));
+    if(!state.days[prev] || !state.days[prev].period) starts.push(k);
+  }
+  return starts;
+}
+function periodBlockLen(startKey){
+  let len=0, d=parseKey(startKey);
+  while(true){ const k=dkey(d); if(state.days[k] && state.days[k].period){ len++; d=addDays(d,1);} else break; }
+  return len;
+}
+function cycleInfo(){
+  const starts = periodStarts();
+  if(!starts.length) return {starts};
+  const past = starts.filter(k=>k<=todayKey);
+  const lastStart = past.length ? past[past.length-1] : starts[0];
+  const cycles=[];
+  for(let i=1;i<starts.length;i++){
+    const c = diffDays(parseKey(starts[i-1]), parseKey(starts[i]));
+    if(c>=15 && c<=60) cycles.push(c);
+  }
+  const recent = cycles.slice(-6);
+  const avg = recent.length ? Math.round(recent.reduce((a,b)=>a+b,0)/recent.length) : 28;
+  const next = addDays(parseKey(lastStart), avg);
+  return { starts, lastStart, cycles:recent, avg, next,
+           cycleDay: diffDays(parseKey(lastStart), today)+1,
+           lastDur: periodBlockLen(lastStart) };
+}
+function predictedKeys(){
+  const set = new Set();
+  if(!state.settings.showPrediction) return set;
+  const info = cycleInfo();
+  if(!info.lastStart || !info.next) return set;
+  // 予測開始日から5日間を予測表示（すでに記録がある日は除く）
+  for(let i=0;i<5;i++){
+    const k = dkey(addDays(info.next,i));
+    if(k>todayKey || true){ if(!state.days[k] || !state.days[k].period) set.add(k); }
+  }
+  return set;
+}
+function leaveUsed(){
+  return Object.values(state.days).reduce((s,d)=>s+(d && d.leave ? Number(d.leave):0),0);
+}
+function fmtNum(n){ return (Math.round(n*10)/10).toString().replace(/\.0$/,""); }
+
+/* 描画 */
+const $ = id=>document.getElementById(id);
+function renderLeave(){
+  const total = Number(state.settings.paidTotal)||0;
+  const used = leaveUsed();
+  const remain = Math.round((total-used)*10)/10;
+  $("leaveRemain").textContent = fmtNum(remain);
+  $("leaveSub").textContent = "全 "+fmtNum(total)+" 日 ・ 使った "+fmtNum(used)+" 日";
+  const pct = total>0 ? Math.max(0, Math.min(100, remain/total*100)) : 0;
+  $("leaveBar").style.width = pct+"%";
+  const card = $("leaveCard");
+  card.classList.toggle("low", remain>0 && remain<=5);
+  card.classList.toggle("empty", remain<=0);
+  $("leaveWarn").textContent = remain<=0 ? "⚠ 有給が残ってないよ" : "⚠ 有給が少なくなってきたよ（残り5日以下）";
+}
+function renderCalendar(){
+  $("monthTitle").textContent = viewYear+"年 "+(viewMonth+1)+"月";
+  const grid = $("calGrid"); grid.innerHTML="";
+  const first = new Date(viewYear, viewMonth, 1);
+  const startOffset = first.getDay();
+  const startDate = addDays(first, -startOffset);
+  const pred = predictedKeys();
+  const info = cycleInfo();
+  for(let i=0;i<42;i++){
+    const d = addDays(startDate, i);
+    const k = dkey(d);
+    const rec = state.days[k];
+    const cell = document.createElement("div");
+    cell.className = "day";
+    if(d.getDay()===0) cell.classList.add("sun");
+    if(d.getDay()===6) cell.classList.add("sat");
+    if(d.getMonth()!==viewMonth) cell.classList.add("other");
+    if(k===todayKey) cell.classList.add("today");
+    if(rec && rec.period) cell.classList.add("period");
+    const isPred = pred.has(k);
+    if(isPred) cell.classList.add("predicted");
+    let marks="";
+    if(rec){
+      if(rec.period==="light") marks+='<span class="mark light">△</span>';
+      if(rec.period==="normal") marks+='<span class="mark normal">●</span>';
+      if(rec.period==="heavy") marks+='<span class="mark heavy">✕</span>';
+      if(rec.leave===1) marks+='<span class="mark leave">○</span>';
+      if(rec.leave===0.5) marks+='<span class="mark half">◐</span>';
+      (rec.customs||[]).forEach(cid=>{
+        const c = state.customs.find(x=>x.id===cid);
+        if(c) marks+='<span class="mark custom" style="color:'+c.color+'">'+c.symbol+'</span>';
+      });
+    }
+    cell.innerHTML = '<div class="dnum">'+d.getDate()+'</div><div class="marks">'+marks+'</div>'
+      + (isPred && info.next && k===dkey(info.next) ? '<div class="pred-lbl">予測</div>' : '')
+      + (rec && rec.memo ? '<div class="memo-dot"></div>' : '');
+    cell.addEventListener("click", ()=>openSheet(k));
+    grid.appendChild(cell);
+  }
+}
+function renderData(){
+  const on = !!state.settings.showData;
+  $("dataToggle").checked = on;
+  $("dataPanel").classList.toggle("on", on);
+  $("predToggle").checked = !!state.settings.showPrediction;
+  if(!on) return;
+  const info = cycleInfo();
+  if(info.lastStart){
+    $("statCycleDay").innerHTML = info.cycleDay + "<small> 日目</small>";
+    const rest = info.avg - info.cycleDay;
+    $("statCycleNote").textContent = rest>0 ? "次回予測まで あと約"+rest+"日" : (rest===0 ? "今日が次回予測日だよ" : "予測日を過ぎているよ");
+    $("statLastStart").textContent = fmtJP(parseKey(info.lastStart))+"（"+DOW[parseKey(info.lastStart).getDay()]+"）";
+    $("statLastDur").textContent = "生理期間 "+info.lastDur+"日間";
+    $("statAvgCycle").innerHTML = info.avg + "<small> 日</small>";
+    $("statAvgNote").textContent = info.cycles.length ? "直近"+info.cycles.length+"回："+info.cycles.join("・")+"日" : "記録が増えると平均が出るよ（今は28日で予測）";
+    $("statNext").textContent = fmtJP(info.next)+"（"+DOW[info.next.getDay()]+"）ごろ";
+  }else{
+    $("statCycleDay").textContent = "-";
+    $("statCycleNote").textContent = "生理を記録すると出てくるよ";
+    $("statLastStart").textContent = "-"; $("statLastDur").textContent = "";
+    $("statAvgCycle").textContent = "-"; $("statAvgNote").textContent = "";
+    $("statNext").textContent = "-";
+  }
+  // 今月の記録
+  const mk = viewYear+"-"+String(viewMonth+1).padStart(2,"0");
+  let p=0, l=0; const cc={};
+  Object.keys(state.days).forEach(k=>{
+    if(!k.startsWith(mk)) return; const r=state.days[k]; if(!r) return;
+    if(r.period) p++; if(r.leave) l+=Number(r.leave);
+    (r.customs||[]).forEach(cid=>{ cc[cid]=(cc[cid]||0)+1; });
+  });
+  let txt = "🩸 生理 "+p+"日<br>○ 有給 "+fmtNum(l)+"日";
+  Object.keys(cc).forEach(cid=>{
+    const c = state.customs.find(x=>x.id===cid);
+    if(c) txt += "<br>"+c.symbol+" "+c.name+" "+cc[cid]+"日";
+  });
+  $("statMonth").innerHTML = txt;
+}
+function renderCustomList(){
+  const list = $("customList"); list.innerHTML="";
+  if(!state.customs.length){
+    list.innerHTML = '<div style="font-size:12.5px;color:var(--sub);font-weight:500">まだ項目がありません。下から追加してね。</div>';
+  }
+  state.customs.forEach(c=>{
+    const row = document.createElement("div"); row.className="custom-item";
+    row.innerHTML = '<span class="sym" style="color:'+c.color+'">'+c.symbol+'</span><span class="nm"></span>';
+    row.querySelector(".nm").textContent = c.name;
+    const del = document.createElement("button"); del.className="del"; del.textContent="🗑"; del.title="削除";
+    del.addEventListener("click", ()=>{
+      if(!confirm("項目「"+c.name+"」を削除しますか？\n（カレンダーに付けた記録も消えます）")) return;
+      state.customs = state.customs.filter(x=>x.id!==c.id);
+      Object.values(state.days).forEach(r=>{ if(r && r.customs) r.customs = r.customs.filter(id=>id!==c.id); });
+      save(); renderAll(); toast("項目を削除しました");
+    });
+    row.appendChild(del); list.appendChild(row);
+  });
+}
+function renderAll(){ renderLeave(); renderCalendar(); renderData(); renderCustomList(); }
+
+/* 日モーダル */
+function getRec(k){ return state.days[k] || (state.days[k]={period:"",leave:0,customs:[],memo:""}); }
+function cleanup(k){
+  const r = state.days[k];
+  if(r && !r.period && !r.leave && !(r.customs&&r.customs.length) && !(r.memo&&r.memo.trim())) delete state.days[k];
+}
+function openSheet(k){
+  selectedKey = k;
+  const d = parseKey(k); const rec = getRec(k);
+  $("sheetDate").textContent = (d.getMonth()+1)+"月"+d.getDate()+"日";
+  $("sheetDow").textContent = "（"+DOW[d.getDay()]+"曜日）";
+  document.querySelectorAll("#periodSeg button").forEach(b=>{
+    b.classList.toggle("sel-period", (b.dataset.period||"") === (rec.period||""));
+  });
+  document.querySelectorAll("#leaveSeg button").forEach(b=>{
+    b.classList.toggle("sel-leave", Number(b.dataset.leave) === Number(rec.leave||0));
+  });
+  const chips = $("customChips"); chips.innerHTML="";
+  if(!state.customs.length) chips.innerHTML = '<span class="none-msg">マイ項目は下の「マイ項目をふやす」から追加できます</span>';
+  state.customs.forEach(c=>{
+    const b = document.createElement("button");
+    b.style.color = c.color;
+    b.innerHTML = c.symbol+" <span style='color:var(--ink)'></span>";
+    b.querySelector("span").textContent = c.name;
+    if((rec.customs||[]).includes(c.id)) b.classList.add("sel");
+    b.addEventListener("click", ()=>{
+      const r = getRec(selectedKey); r.customs = r.customs||[];
+      const i = r.customs.indexOf(c.id);
+      if(i>=0) r.customs.splice(i,1); else r.customs.push(c.id);
+      cleanup(selectedKey); save(); renderAll(); openSheetRefresh();
+    });
+    chips.appendChild(b);
+  });
+  $("memoInput").value = rec.memo||"";
+  $("overlay").classList.add("on");
+}
+function openSheetRefresh(){ if(selectedKey) openSheet(selectedKey); }
+function closeSheet(){ $("overlay").classList.remove("on"); selectedKey=null; }
+document.querySelectorAll("#periodSeg button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    if(!selectedKey) return;
+    const r = getRec(selectedKey);
+    r.period = b.dataset.period||"";
+    cleanup(selectedKey); save(); renderAll(); openSheetRefresh();
+  });
+});
+document.querySelectorAll("#leaveSeg button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    if(!selectedKey) return;
+    const r = getRec(selectedKey);
+    r.leave = Number(b.dataset.leave);
+    cleanup(selectedKey); save(); renderAll(); openSheetRefresh();
+  });
+});
+$("memoInput").addEventListener("input", ()=>{
+  if(!selectedKey) return;
+  const r = getRec(selectedKey); r.memo = $("memoInput").value;
+  cleanup(selectedKey); save(); renderCalendar();
+});
+$("closeSheetBtn").addEventListener("click", closeSheet);
+$("overlay").addEventListener("click", e=>{ if(e.target===$("overlay")) closeSheet(); });
+$("clearDayBtn").addEventListener("click", ()=>{
+  if(!selectedKey) return;
+  delete state.days[selectedKey]; save(); renderAll(); closeSheet(); toast("その日の記録を消しました");
+});
+
+/* 月移動 */
+$("prevBtn").addEventListener("click", ()=>{ viewMonth--; if(viewMonth<0){viewMonth=11;viewYear--;} renderCalendar(); renderData(); });
+$("nextBtn").addEventListener("click", ()=>{ viewMonth++; if(viewMonth>11){viewMonth=0;viewYear++;} renderCalendar(); renderData(); });
+$("todayBtn").addEventListener("click", ()=>{ viewYear=today.getFullYear(); viewMonth=today.getMonth(); renderCalendar(); renderData(); });
+
+/* スイッチ */
+$("dataToggle").addEventListener("change", e=>{ state.settings.showData = e.target.checked; save(); renderData(); });
+$("predToggle").addEventListener("change", e=>{ state.settings.showPrediction = e.target.checked; save(); renderCalendar(); renderData(); });
+
+/* マイ項目追加フォーム */
+let selSymbol = SYMBOLS[0], selColor = COLORS[0];
+function buildPickers(){
+  const sp = $("symPicker"); sp.innerHTML="";
+  SYMBOLS.forEach(s=>{
+    const b=document.createElement("button"); b.type="button"; b.textContent=s;
+    if(s===selSymbol) b.classList.add("sel");
+    b.addEventListener("click", ()=>{ selSymbol=s; buildPickers(); });
+    sp.appendChild(b);
+  });
+  const cp = $("colorPicker"); cp.innerHTML="";
+  COLORS.forEach(c=>{
+    const b=document.createElement("button"); b.type="button"; b.style.background=c;
+    if(c===selColor) b.classList.add("sel");
+    b.addEventListener("click", ()=>{ selColor=c; buildPickers(); });
+    cp.appendChild(b);
+  });
+}
+$("addCustomBtn").addEventListener("click", ()=>{
+  const name = $("newName").value.trim();
+  if(!name){ toast("項目の名前を入れてね"); $("newName").focus(); return; }
+  state.customs.push({id:"c-"+Date.now(), name, symbol:selSymbol, color:selColor});
+  $("newName").value="";
+  save(); renderAll(); toast("項目「"+name+"」を追加しました 🎀");
+});
+
+/* 設定・バックアップ */
+$("paidTotalInput").value = state.settings.paidTotal;
+$("paidTotalInput").addEventListener("change", e=>{
+  const v = Number(e.target.value);
+  if(isNaN(v) || v<0){ e.target.value = state.settings.paidTotal; return; }
+  state.settings.paidTotal = v; save(); renderLeave(); toast("有給の付与日数を "+fmtNum(v)+"日にしました");
+});
+$("exportBtn").addEventListener("click", ()=>{
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "miki-calendar-backup-"+todayKey+".json";
+  a.click(); URL.revokeObjectURL(a.href);
+  toast("バックアップを保存しました 💾");
+});
+$("importBtn").addEventListener("click", ()=>$("importFile").click());
+$("importFile").addEventListener("change", e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = ()=>{
+    try{
+      const s = JSON.parse(rd.result);
+      if(!s || typeof s!=="object" || !s.days) throw new Error("bad");
+      state = normalize(s); save();
+      $("paidTotalInput").value = state.settings.paidTotal;
+      renderAll(); toast("バックアップを読み込みました 📂");
+    }catch(err){ toast("読み込めませんでした。バックアップファイルを選んでね"); }
+    e.target.value="";
+  };
+  rd.readAsText(f);
+});
+
+let toastTimer=null;
+function toast(msg){
+  const t=$("toast"); t.textContent=msg; t.classList.add("on");
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("on"),2300);
+}
+
+buildPickers();
+renderAll();
+if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
+</script>
+</body>
+</html>
