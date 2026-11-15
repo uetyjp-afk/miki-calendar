@@ -267,6 +267,10 @@ input,textarea{-webkit-user-select:text;user-select:text}
 #evMenu .evm-title{font-weight:800;font-size:13.5px;padding:7px 10px 5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #evMenu button,#evMenu a{display:block;width:100%;text-align:left;background:none;border:none;border-top:1px solid var(--line);padding:11px 10px;font-size:14px;font-weight:700;color:var(--ink);cursor:pointer;text-decoration:none;font-family:inherit;box-sizing:border-box}
 #evMenu .del{color:#e5395f}
+.ev-title-row{display:flex;align-items:center;gap:10px}
+.ev-title-row .ev-text{flex:1}
+#evTitleIcon{width:42px;height:42px;flex:none;display:flex;align-items:center;justify-content:center;background:var(--pink-soft);border-radius:12px}
+#evTitleIcon svg{width:30px;height:30px}
 .toast{
   position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;
   padding:11px 20px;border-radius:99px;font-size:13.5px;font-weight:700;z-index:99;transition:.3s;opacity:0;pointer-events:none;
@@ -361,7 +365,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
     </div>
   </div>
 
-  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v9</span></footer>
+  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v10</span></footer>
 </div>
 
 <!-- 設定画面 -->
@@ -443,7 +447,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
   <div class="sheet">
     <h3 id="evSheetTitle">予定を追加</h3>
     <h4>✏ タイトル</h4>
-    <input type="text" id="evTitle" class="ev-text" placeholder="例：病院、美容院、早番…" maxlength="30">
+    <div class="ev-title-row"><span id="evTitleIcon"></span><input type="text" id="evTitle" class="ev-text" placeholder="例：病院、美容院、早番…" maxlength="30"></div>
     <h4>🎀 アイコン</h4>
     <div class="ev-icons" id="evIconPicker"></div>
     <h4>🎨 色</h4>
@@ -835,6 +839,7 @@ function openEventEditor(opts){
 }
 function closeEventEditor(){ $("evOverlay").classList.remove("on"); }
 function buildEvPickers(){
+  $("evTitleIcon").innerHTML = iconHTML(evIcon) || '<span style="font-size:20px">📅</span>';
   const ip = $("evIconPicker"); ip.innerHTML = "";
   const mk = (id, html, title)=>{
     const b = document.createElement("button");
@@ -1019,75 +1024,76 @@ document.addEventListener("pointerdown", e=>{ const m = $("evMenu"); if(m.classL
 
 /* 予定チップのドラッグ移動・削除 */
 document.addEventListener("contextmenu", e=>{ if(e.target.closest && e.target.closest(".day,.tray-item,.evt")) e.preventDefault(); });
-let chipDrag = null, suppressCellClick = 0;
+let suppressCellClick = 0;
 function attachChipDrag(chip, e, dayKey){
   chip.addEventListener("pointerdown", ev=>{
     const sx = ev.clientX, sy = ev.clientY;
-    chip.classList.add("grab");
-    const g0 = document.createElement("div");
-    g0.className = "drag-ghost"; g0.innerHTML = iconHTML(e.icon) || '<span style="font-size:36px">📅</span>';
-    g0.style.left = sx + "px"; g0.style.top = sy + "px";
-    document.body.appendChild(g0);
-    chipDrag = {e:e, fromDay:dayKey, started:false, ghost:g0, hl:null, onTrash:false};
+    let activated = false, dragging = false, cancelled = false;
+    let ghost = null, hl = null, onTrash = false;
+    const timer = setTimeout(()=>{
+      if(cancelled) return;
+      activated = true;
+      chip.classList.add("grab");
+      ghost = document.createElement("div");
+      ghost.className = "drag-ghost";
+      ghost.innerHTML = iconHTML(e.icon) || '<span style="font-size:36px">📅</span>';
+      ghost.style.left = sx + "px"; ghost.style.top = sy + "px";
+      document.body.appendChild(ghost);
+      try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}
+      openEvMenu(e, chip);
+    }, 450);
     const move = mv=>{
-      if(!chipDrag) return;
       const dx = mv.clientX - sx, dy = mv.clientY - sy;
-      if(!chipDrag.started){
-        if(Math.hypot(dx, dy) > 12){
-          chipDrag.started = true;
-          try{ if(navigator.vibrate) navigator.vibrate(8); }catch(err){}
-          $("trashZone").classList.add("on");
-        } else return;
+      if(!activated){
+        if(Math.hypot(dx, dy) > 10){ cancelled = true; clearTimeout(timer); }
+        return;
       }
-      chipDrag.ghost.style.left = mv.clientX + "px";
-      chipDrag.ghost.style.top = mv.clientY + "px";
+      if(!dragging){
+        if(Math.hypot(dx, dy) < 6) return;
+        dragging = true;
+        closeEvMenu();
+        $("trashZone").classList.add("on");
+      }
+      ghost.style.left = mv.clientX + "px";
+      ghost.style.top = mv.clientY + "px";
       const under = document.elementFromPoint(mv.clientX, mv.clientY);
       const cell = under && under.closest ? under.closest(".day") : null;
       const tz = under && under.closest ? under.closest("#trashZone") : null;
-      if(chipDrag.hl && chipDrag.hl !== cell) chipDrag.hl.classList.remove("drop-hl");
+      if(hl && hl !== cell) hl.classList.remove("drop-hl");
       if(cell) cell.classList.add("drop-hl");
-      chipDrag.hl = cell;
+      hl = cell;
       const tzr = $("trashZone").getBoundingClientRect();
-      const onTz = !!tz || (mv.clientY >= tzr.top - 8 && mv.clientY <= tzr.bottom + 20);
-      chipDrag.onTrash = onTz;
-      $("trashZone").classList.toggle("hot", onTz);
+      onTrash = !!tz || (mv.clientY >= tzr.top - 8 && mv.clientY <= tzr.bottom + 20);
+      $("trashZone").classList.toggle("hot", onTrash);
     };
     const up = ()=>{
+      clearTimeout(timer);
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", up);
       window.removeEventListener("pointercancel", up);
-      if(!chipDrag) return;
-      const was = chipDrag.started, cell = chipDrag.hl, onTrash = chipDrag.onTrash;
-      const ev2 = chipDrag.e, fromDay = chipDrag.fromDay;
       chip.classList.remove("grab");
-      if(chipDrag.ghost) chipDrag.ghost.remove();
-      if(chipDrag.hl) chipDrag.hl.classList.remove("drop-hl");
+      if(ghost) ghost.remove();
+      if(hl) hl.classList.remove("drop-hl");
       $("trashZone").classList.remove("on"); $("trashZone").classList.remove("hot");
-      chipDrag = null;
-      if(!was) return;
+      if(!activated) return;
       suppressCellClick = Date.now();
+      if(!dragging) return;
       if(onTrash){
-        state.events = state.events.filter(x=>x.id!==ev2.id);
+        state.events = state.events.filter(x=>x.id!==e.id);
         save(); renderAll(); toast("予定を削除しました 🗑");
-      }else if(cell && cell.dataset.key && cell.dataset.key !== fromDay){
-        const delta = diffDays(parseKey(fromDay), parseKey(cell.dataset.key));
-        ev2.start = dkey(addDays(parseKey(ev2.start), delta));
-        ev2.end = dkey(addDays(parseKey(ev2.end), delta));
+      }else if(hl && hl.dataset.key && hl.dataset.key !== dayKey){
+        const delta = diffDays(parseKey(dayKey), parseKey(hl.dataset.key));
+        e.start = dkey(addDays(parseKey(e.start), delta));
+        e.end = dkey(addDays(parseKey(e.end), delta));
         save(); renderAll();
-        toast("予定を " + fmtJP(parseKey(ev2.start)) + " に移動しました 📅");
+        toast("予定を " + fmtJP(parseKey(e.start)) + " に移動しました 📅");
       }
     };
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
     window.addEventListener("pointercancel", up);
   });
-  chip.addEventListener("click", ev=>{
-    if(Date.now() - suppressCellClick < 400) return;
-    ev.stopPropagation();
-    openEvMenu(e, chip);
-  });
 }
-
 /* 設定・バックアップ */
 $("paidTotalInput").value = state.settings.paidTotal;
 $("paidTotalInput").addEventListener("change", e=>{
