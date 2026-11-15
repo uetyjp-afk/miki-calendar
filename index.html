@@ -283,7 +283,7 @@ textarea.ev-text{min-height:64px;resize:vertical}
 #stampTray .row{display:flex;gap:2px;overflow-x:auto;max-width:540px;margin:0 auto}
 .tray-item{flex:none;width:56px;border:none;background:none;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 0 2px;border-radius:12px;touch-action:pan-x}
 .tray-item .nm{font-size:9.5px;font-weight:800;color:var(--sub)}
-.tray-ic{display:inline-flex;width:28px;height:28px}
+.tray-ic{display:inline-flex;width:28px;height:28px;align-items:center;justify-content:center}
 .tray-ic svg{width:100%;height:100%}
 .drag-ghost{position:fixed;z-index:200;width:54px;height:54px;pointer-events:none;transform:translate(-50%,-115%);filter:drop-shadow(0 6px 8px rgba(0,0,0,.3))}
 .drag-ghost svg{width:100%;height:100%}
@@ -336,7 +336,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
   <!-- 有給残数（目立つ表示） -->
   <div class="leave-card" id="leaveCard">
     <div>
-      <div class="lbl">○ 有給残り</div>
+      <div class="lbl">● 有給残り</div>
       <div><span class="big" id="leaveRemain">-</span><span class="unit"> 日</span></div>
     </div>
     <div class="right">
@@ -362,7 +362,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
       <span><b style="color:#ff9dbd">△</b> 生理・少ない</span>
       <span><b style="color:#ff7aa8">●</b> ふつう</span>
       <span><b style="color:#e5395f">✕</b> 多い</span>
-      <span><b style="color:#2fbfa5">○</b> 有給</span>
+      <span><b style="color:#2fbfa5">●</b> 有給</span>
       <span><b style="color:#7ed3c0">◐</b> 半日有給</span>
     </div>
   </div>
@@ -436,7 +436,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
     </div>
   </div>
 
-  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v20</span></footer>
+  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v21</span></footer>
 </div>
 
 <!-- 設定画面 -->
@@ -461,12 +461,12 @@ input,textarea{-webkit-user-select:text;user-select:text}
   <div class="section">
     <h3>⚙ 設定・バックアップ</h3>
     <div class="set-row">
-      <label for="paidTotalInput">○ 有給の付与日数（全部で何日？）</label>
+      <label for="paidTotalInput">● 有給の付与日数（全部で何日？）</label>
       <input type="number" id="paidTotalInput" min="0" max="60" step="0.5">
     </div>
-    <p class="hint">有給（○）や半日有給（◐）を入れるたびに、上の「有給残り」が自動で減ります。付与日数が増えたらここを直してね。</p>
+    <p class="hint">有給（●）や半日有給（◐）を入れるたびに、上の「有給残り」が自動で減ります。付与日数が増えたらここを直してね。</p>
     <div class="set-row">
-      <label for="paidRemainInput">○ 有給残り（今の残り日数）</label>
+      <label for="paidRemainInput">● 有給残り（今の残り日数）</label>
       <input type="number" id="paidRemainInput" min="0" max="99" step="0.5">
     </div>
     <p class="hint">使い始めや、残数がずれたときは、ここに「今の実際の残り日数」を入れると、上の表示がその数字に合います。</p>
@@ -490,7 +490,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
   <div class="sheet">
     <h3><span id="sheetDate">-</span> <span class="dow" id="sheetDow"></span></h3>
 
-    <div class="auto-note" style="text-align:left;margin:0 0 6px">記録（○ 有給・△・✕ など）は、画面下のアイコンをドラッグするか、タップで入ります</div>
+    <div class="auto-note" style="text-align:left;margin:0 0 6px">記録（● 有給・△・✕ など）は、画面下のアイコンをドラッグするか、タップで入ります</div>
 
     <h4>📅 予定</h4>
     <div id="sheetEvents"></div>
@@ -635,6 +635,10 @@ function predictedKeys(){
 function leaveUsed(){
   return Object.values(state.days).reduce((s,d)=>s+(d && d.leave ? Number(d.leave):0),0);
 }
+function qtrSVG(px){
+  const st = px ? ' style="display:block;width:' + px + 'px;height:' + px + 'px"' : ' style="display:block"';
+  return '<svg viewBox="0 0 100 100" width="1em" height="1em"' + st + '><circle cx="50" cy="50" r="40" fill="none" stroke="#5fc3a9" stroke-width="13"/><path d="M50 50 L50 10 A40 40 0 0 1 90 50 Z" fill="#5fc3a9"/></svg>';
+}
 function fmtNum(n){ return parseFloat((Math.round(n*4)/4).toFixed(2)).toString(); }
 
 /* 描画 */
@@ -681,9 +685,9 @@ function renderCalendar(){
       if(rec.period==="light") marks+='<span class="mark light" data-mk="period" data-mv="light">△</span>';
       if(rec.period==="normal") marks+='<span class="mark normal" data-mk="period" data-mv="normal">●</span>';
       if(rec.period==="heavy") marks+='<span class="mark heavy" data-mk="period" data-mv="heavy">✕</span>';
-      if(rec.leave===1) marks+='<span class="mark leave" data-mk="leave" data-mv="1">○</span>';
+      if(rec.leave===1) marks+='<span class="mark leave" data-mk="leave" data-mv="1">●</span>';
       if(rec.leave===0.5) marks+='<span class="mark half" data-mk="leave" data-mv="0.5">◐</span>';
-      if(rec.leave===0.25) marks+='<span class="mark qtr" data-mk="leave" data-mv="0.25">◔</span>';
+      if(rec.leave===0.25) marks+='<span class="mark qtr" data-mk="leave" data-mv="0.25">' + qtrSVG() + '</span>';
       (rec.customs||[]).forEach(cid=>{
         const c = state.customs.find(x=>x.id===cid);
         if(c) marks+='<span class="mark custom" data-mk="custom" data-mv="'+c.id+'" style="color:'+c.color+'">'+c.symbol+'</span>';
@@ -723,7 +727,7 @@ function renderDayDetail(){
     if(rec.period==="light") mk.push("△ 生理・少ない");
     if(rec.period==="normal") mk.push("● 生理・ふつう");
     if(rec.period==="heavy") mk.push("✕ 生理・多い");
-    if(rec.leave===1) mk.push("○ 有給");
+    if(rec.leave===1) mk.push("● 有給");
     if(rec.leave===0.5) mk.push("◐ 半日有給");
     if(rec.leave===0.25) mk.push("◔ 2時間有給");
     (rec.customs||[]).forEach(cid=>{ const c = state.customs.find(x=>x.id===cid); if(c) mk.push(c.symbol+" "+c.name); });
@@ -862,7 +866,7 @@ function renderData(){
     if(r.period) p++; if(r.leave) l+=Number(r.leave);
     (r.customs||[]).forEach(cid=>{ cc[cid]=(cc[cid]||0)+1; });
   });
-  let txt = "🩸 生理 "+p+"日<br>○ 有給 "+fmtNum(l)+"日";
+  let txt = "🩸 生理 "+p+"日<br>● 有給 "+fmtNum(l)+"日";
   Object.keys(cc).forEach(cid=>{
     const c = state.customs.find(x=>x.id===cid);
     if(c) txt += "<br>"+c.symbol+" "+c.name+" "+cc[cid]+"日";
@@ -1110,9 +1114,9 @@ $("addEventBtn").addEventListener("click", ()=>openEventEditor({date:selKey || t
 function buildTray(){
   const row = $("trayRow"); if(!row) return; row.innerHTML = "";
   const items = [
-    {id:"mk-leave", kind:"leave", value:1, name:"有給", html:'<span style="color:#2fbfa5;font-size:25px;line-height:1;font-weight:800">○</span>'},
+    {id:"mk-leave", kind:"leave", value:1, name:"有給", html:'<span style="color:#2fbfa5;font-size:25px;line-height:1;font-weight:800">●</span>'},
     {id:"mk-half", kind:"leave", value:0.5, name:"半休", html:'<span style="color:#57c9ae;font-size:25px;line-height:1;font-weight:800">◐</span>'},
-    {id:"mk-2h", kind:"leave", value:0.25, name:"2時間", html:'<span style="color:#8fd8c7;font-size:34px;line-height:1;font-weight:800">◔</span>'},
+    {id:"mk-2h", kind:"leave", value:0.25, name:"2時間", html:qtrSVG(32)},
     {id:"mk-light", kind:"period", period:"light", name:"少ない", html:'<span style="color:#ff9dbd;font-size:25px;line-height:1;font-weight:800">△</span>'},
     {id:"mk-heavy", kind:"period", period:"heavy", name:"多い", html:'<span style="color:#e5395f;font-size:25px;line-height:1;font-weight:800">✕</span>'}
   ].concat(STAMPS.map(st=>({id:st.id, name:st.name, html:st.svg})))
@@ -1210,7 +1214,7 @@ function applyTrayItem(it, key){
   const r = getRec(key);
   if(it.kind === "leave"){
     if(r.leave === it.value){ r.leave = 0; toast("お休みの記録を取り消しました"); }
-    else { r.leave = it.value; toast(it.value === 1 ? "○ 有給（1日）を記録しました 🌿" : it.value === 0.5 ? "◐ 半休を記録しました 🌿" : "◔ 2時間有給を記録しました 🌿"); }
+    else { r.leave = it.value; toast(it.value === 1 ? "● 有給（1日）を記録しました 🌿" : it.value === 0.5 ? "◐ 半休を記録しました 🌿" : "◔ 2時間有給を記録しました 🌿"); }
   }else if(it.kind === "period"){
     if(r.period === it.period){ r.period = ""; toast("生理の記録を取り消しました"); }
     else { r.period = it.period; toast(it.period === "light" ? "△ 少ない を記録しました 🩸" : "✕ 多い を記録しました 🩸"); }
@@ -1283,7 +1287,7 @@ function openMarkMenu(key, mk, mv, anchor){
   };
   if(mk === "leave"){
     title.textContent = "お休みの記録";
-    addBtn("○ 1日にする", ()=>setMark(key, "leave", 1));
+    addBtn("● 1日にする", ()=>setMark(key, "leave", 1));
     addBtn("◐ 半日にする", ()=>setMark(key, "leave", 0.5));
     addBtn("◔ 2時間にする", ()=>setMark(key, "leave", 0.25));
   }else if(mk === "period"){
@@ -1318,7 +1322,7 @@ function attachMarkPress(el, key){
       el.classList.add("grab");
       ghost = document.createElement("div");
       ghost.className = "drag-ghost";
-      ghost.innerHTML = '<span style="font-size:30px;line-height:1">' + el.textContent + '</span>';
+      ghost.innerHTML = '<span style="font-size:30px;line-height:1">' + el.innerHTML + '</span>';
       ghost.style.left = sx + "px"; ghost.style.top = sy + "px";
       document.body.appendChild(ghost);
       try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}
