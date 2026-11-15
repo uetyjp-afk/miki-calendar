@@ -18,7 +18,7 @@
   --card:#ffffff; --shadow:0 4px 18px rgba(244,82,139,.12); --hero2:#ffb3c9;
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0}
+html,body{margin:0;padding:0;overflow-x:hidden}
 body{
   font-family:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN",sans-serif;
   color:var(--ink);
@@ -63,13 +63,14 @@ header.app p{margin:2px 0 0;color:var(--sub);font-size:12px;font-weight:500}
 }
 
 /* カレンダー */
-.cal-card{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:12px 10px 14px}
+.cal-card{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:12px 10px 14px;touch-action:pan-y}
 .week{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:12px;font-weight:800;color:var(--sub);padding:2px 0 6px}
 .week div:nth-child(1){color:var(--sun)} .week div:nth-child(7){color:var(--sat)}
 .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 .day{
   position:relative;min-height:66px;border-radius:14px;padding:4px 2px 3px;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;background:#fff;border:2px solid transparent;
+  min-width:0;overflow:hidden;
 }
 .day:active{transform:scale(.96)}
 .day .dnum{font-size:14px;font-weight:700;line-height:1.15}
@@ -210,8 +211,8 @@ footer.note{text-align:center;color:var(--sub);font-size:11px;margin-top:18px;fo
 
 /* 予定チップ */
 .day .evts{display:flex;flex-direction:column;gap:2px;width:100%;margin-top:1px}
-.evt{display:flex;align-items:center;gap:2px;touch-action:none;cursor:grab;font-size:10px;font-weight:800;line-height:1.3;padding:1px 3px;border-radius:5px;max-width:100%}
-.evt-tt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.evt{display:flex;align-items:center;gap:2px;touch-action:none;cursor:grab;font-size:10px;font-weight:800;line-height:1.3;padding:1px 3px;border-radius:5px;max-width:100%;min-width:0;box-sizing:border-box}
+.evt-tt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1}
 .evt-ic{display:inline-flex;width:11px;height:11px;flex:none}
 .evt-ic svg{width:100%;height:100%}
 .evt-ic span{font-size:10px !important}
@@ -226,6 +227,17 @@ footer.note{text-align:center;color:var(--sub);font-size:11px;margin-top:18px;fo
 .evt-ic-lg{display:inline-flex;width:22px;height:22px;flex:none}
 .evt-ic-lg svg{width:100%;height:100%}
 .add-ev-btn{width:100%;border:2px dashed var(--line);background:#fff;color:var(--pink-deep);border-radius:14px;padding:10px;font-family:inherit;font-size:13.5px;font-weight:800;cursor:pointer}
+/* 選んだ日の予定（カレンダー下の全文表示） */
+.day-detail{margin-top:12px;background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:12px 14px 8px}
+.day-detail .dd-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:8px}
+.day-detail .dd-date{font-weight:800;font-size:15.5px}
+.day-detail .dd-marks{font-size:12px;color:var(--sub);font-weight:700}
+.day-detail .ev-row{align-items:flex-start}
+.day-detail .dd-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.day-detail .dd-main .tt{font-weight:800;font-size:13.5px;white-space:normal;overflow-wrap:anywhere;line-height:1.4}
+.day-detail .dd-sub{font-size:11.5px;color:var(--sub);font-weight:600;overflow-wrap:anywhere;line-height:1.4}
+.day-detail .dd-none{font-size:12.5px;color:var(--sub);font-weight:500;padding:1px 0 7px}
+.day-detail .dd-memo{font-size:12.5px;font-weight:600;background:var(--pink-bg);border-radius:10px;padding:7px 10px;margin:0 0 6px;overflow-wrap:anywhere;line-height:1.5}
 /* 予定エディタ */
 .ev-text{width:100%;border:2px solid var(--line);border-radius:12px;padding:11px 12px;font-family:inherit;font-size:15px;font-weight:500;color:var(--ink)}
 .ev-text:focus{outline:none;border-color:var(--pink)}
@@ -328,6 +340,13 @@ input,textarea{-webkit-user-select:text;user-select:text}
     </div>
   </div>
 
+  <!-- 選んだ日の予定（全文） -->
+  <div class="day-detail" id="dayDetail">
+    <div class="dd-head"><span class="dd-date" id="ddDate">-</span><span class="dd-marks" id="ddMarks"></span></div>
+    <div id="ddEvents"></div>
+    <div class="dd-memo" id="ddMemo" style="display:none"></div>
+  </div>
+
   <!-- データスイッチ -->
   <div class="switch-row">
     <div>
@@ -372,7 +391,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
     </div>
   </div>
 
-  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v12</span></footer>
+  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v13</span></footer>
 </div>
 
 <!-- 設定画面 -->
@@ -646,6 +665,41 @@ function renderCalendar(){
     });
     grid.appendChild(cell);
   }
+  renderDayDetail();
+}
+function renderDayDetail(){
+  const k = selKey || todayKey;
+  const d = parseKey(k);
+  $("ddDate").textContent = (d.getMonth()+1)+"月"+d.getDate()+"日（"+DOW[d.getDay()]+"）";
+  const rec = state.days[k];
+  const mk = [];
+  if(rec){
+    if(rec.period==="light") mk.push("△ 生理・少ない");
+    if(rec.period==="normal") mk.push("● 生理・ふつう");
+    if(rec.period==="heavy") mk.push("✕ 生理・多い");
+    if(rec.leave===1) mk.push("○ 有給");
+    if(rec.leave===0.5) mk.push("◐ 半日有給");
+    if(rec.leave===0.25) mk.push("◔ 2時間有給");
+    (rec.customs||[]).forEach(cid=>{ const c = state.customs.find(x=>x.id===cid); if(c) mk.push(c.symbol+" "+c.name); });
+  }
+  $("ddMarks").textContent = mk.join("　");
+  const box = $("ddEvents"); box.innerHTML = "";
+  const evs = eventsOn(k);
+  if(!evs.length) box.innerHTML = '<div class="dd-none">この日の予定はありません</div>';
+  evs.forEach(e=>{
+    const row = document.createElement("div"); row.className = "ev-row";
+    const pd = e.start===e.end ? "" : fmtJP(parseKey(e.start))+"〜"+fmtJP(parseKey(e.end));
+    row.innerHTML = '<span class="evt-ic-lg">'+iconHTML(e.icon)+'</span><span class="dd-main"><span class="tt"></span>'
+      + (e.place ? '<span class="dd-sub">📍'+esc(e.place)+'</span>' : '')
+      + (e.memo ? '<span class="dd-sub">'+esc(e.memo)+'</span>' : '')
+      + '</span>' + (pd ? '<span class="pd">'+pd+'</span>' : '');
+    row.querySelector(".tt").textContent = e.title;
+    row.addEventListener("click", ()=>openEventEditor({event:e}));
+    box.appendChild(row);
+  });
+  const dm = $("ddMemo");
+  if(rec && rec.memo){ dm.style.display = ""; dm.textContent = "📝 " + rec.memo; }
+  else dm.style.display = "none";
 }
 function renderData(){
   const on = !!state.settings.showData;
@@ -754,9 +808,28 @@ $("clearDayBtn").addEventListener("click", ()=>{
 });
 
 /* 月移動 */
-$("prevBtn").addEventListener("click", ()=>{ viewMonth--; if(viewMonth<0){viewMonth=11;viewYear--;} renderCalendar(); renderData(); });
-$("nextBtn").addEventListener("click", ()=>{ viewMonth++; if(viewMonth>11){viewMonth=0;viewYear++;} renderCalendar(); renderData(); });
+function changeMonth(delta){
+  viewMonth += delta;
+  if(viewMonth<0){ viewMonth=11; viewYear--; }
+  if(viewMonth>11){ viewMonth=0; viewYear++; }
+  renderCalendar(); renderData();
+}
+$("prevBtn").addEventListener("click", ()=>changeMonth(-1));
+$("nextBtn").addEventListener("click", ()=>changeMonth(1));
 $("todayBtn").addEventListener("click", ()=>{ viewYear=today.getFullYear(); viewMonth=today.getMonth(); renderCalendar(); renderData(); });
+/* 左右スワイプで月移動 */
+let swipeX = null, swipeY = null;
+const calCardEl = document.querySelector(".cal-card");
+calCardEl.addEventListener("touchstart", e=>{
+  if(e.touches.length===1){ swipeX = e.touches[0].clientX; swipeY = e.touches[0].clientY; }
+}, {passive:true});
+calCardEl.addEventListener("touchend", e=>{
+  if(swipeX===null) return;
+  const t = e.changedTouches[0];
+  const dx = t.clientX - swipeX, dy = t.clientY - swipeY;
+  swipeX = swipeY = null;
+  if(Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)*1.6) changeMonth(dx < 0 ? 1 : -1);
+}, {passive:true});
 
 /* スイッチ */
 $("dataToggle").addEventListener("change", e=>{ state.settings.showData = e.target.checked; save(); renderData(); });
