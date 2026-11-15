@@ -310,6 +310,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
 #evTitleIcon{width:42px;height:42px;flex:none;display:flex;align-items:center;justify-content:center;background:var(--pink-soft);border-radius:12px}
 #evTitleIcon svg{width:30px;height:30px}
 .mark{display:inline-block}
+.mark.qtr{font-size:22px}
 .mark.grab{outline:2px solid var(--pink-deep);outline-offset:1px;border-radius:50%;transform:scale(1.3)}
 #markMenu{position:fixed;z-index:95;width:196px;background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.28);padding:6px;display:none}
 #markMenu.on{display:block}
@@ -435,7 +436,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
     </div>
   </div>
 
-  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v19</span></footer>
+  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v20</span></footer>
 </div>
 
 <!-- 設定画面 -->
@@ -1111,7 +1112,7 @@ function buildTray(){
   const items = [
     {id:"mk-leave", kind:"leave", value:1, name:"有給", html:'<span style="color:#2fbfa5;font-size:25px;line-height:1;font-weight:800">○</span>'},
     {id:"mk-half", kind:"leave", value:0.5, name:"半休", html:'<span style="color:#57c9ae;font-size:25px;line-height:1;font-weight:800">◐</span>'},
-    {id:"mk-2h", kind:"leave", value:0.25, name:"2時間", html:'<span style="color:#8fd8c7;font-size:25px;line-height:1;font-weight:800">◔</span>'},
+    {id:"mk-2h", kind:"leave", value:0.25, name:"2時間", html:'<span style="color:#8fd8c7;font-size:34px;line-height:1;font-weight:800">◔</span>'},
     {id:"mk-light", kind:"period", period:"light", name:"少ない", html:'<span style="color:#ff9dbd;font-size:25px;line-height:1;font-weight:800">△</span>'},
     {id:"mk-heavy", kind:"period", period:"heavy", name:"多い", html:'<span style="color:#e5395f;font-size:25px;line-height:1;font-weight:800">✕</span>'}
   ].concat(STAMPS.map(st=>({id:st.id, name:st.name, html:st.svg})))
