@@ -261,6 +261,12 @@ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 input,textarea{-webkit-user-select:text;user-select:text}
 .tray-item.grab{background:var(--pink-soft);transform:scale(1.14)}
 .evt.grab{outline:2px solid var(--pink-deep);outline-offset:1px;transform:scale(1.07)}
+.day.sel{box-shadow:inset 0 0 0 3px var(--pink-deep);background:var(--pink-soft)}
+#evMenu{position:fixed;z-index:95;width:196px;background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.28);padding:6px;display:none}
+#evMenu.on{display:block}
+#evMenu .evm-title{font-weight:800;font-size:13.5px;padding:7px 10px 5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#evMenu button,#evMenu a{display:block;width:100%;text-align:left;background:none;border:none;border-top:1px solid var(--line);padding:11px 10px;font-size:14px;font-weight:700;color:var(--ink);cursor:pointer;text-decoration:none;font-family:inherit;box-sizing:border-box}
+#evMenu .del{color:#e5395f}
 .toast{
   position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;
   padding:11px 20px;border-radius:99px;font-size:13.5px;font-weight:700;z-index:99;transition:.3s;opacity:0;pointer-events:none;
@@ -355,7 +361,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
     </div>
   </div>
 
-  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v8</span></footer>
+  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v9</span></footer>
 </div>
 
 <!-- 設定画面 -->
@@ -409,23 +415,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
   <div class="sheet">
     <h3><span id="sheetDate">-</span> <span class="dow" id="sheetDow"></span></h3>
 
-    <h4>🩸 生理</h4>
-    <div class="seg" id="periodSeg">
-      <button data-period="">なし</button>
-      <button data-period="light"><span style="color:#ff9dbd;font-size:17px">△</span><small>少ない</small></button>
-      <button data-period="normal"><span style="color:#ff7aa8;font-size:17px">●</span><small>ふつう</small></button>
-      <button data-period="heavy"><span style="color:#e5395f;font-size:17px">✕</span><small>多い</small></button>
-    </div>
-
-    <h4>🌿 お休み</h4>
-    <div class="seg" id="leaveSeg">
-      <button data-leave="0">なし</button>
-      <button data-leave="1"><span style="color:#2fbfa5;font-size:17px">○</span><small>有給（1日）</small></button>
-      <button data-leave="0.5"><span style="color:#7ed3c0;font-size:17px">◐</span><small>半日有給</small></button>
-    </div>
-
-    <h4>🎀 マイ項目</h4>
-    <div class="chips" id="customChips"></div>
+    <div class="auto-note" style="text-align:left;margin:0 0 6px">記録（○ 有給・△・✕ など）は、画面下のアイコンをドラッグするか、タップで入ります</div>
 
     <h4>📅 予定</h4>
     <div id="sheetEvents"></div>
@@ -445,6 +435,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
 
 <button id="addEventBtn" aria-label="予定を追加">＋</button>
 <div id="trashZone">🗑 ここに持ってくると削除</div>
+<div id="evMenu"><div class="evm-title" id="evMenuTitle"></div><button id="evMenuEdit">✏ 予定を編集</button><a id="evMenuMap" target="_blank" rel="noopener">📍 地図を見る</a><button id="evMenuDel" class="del">🗑 予定を削除</button></div>
 <div id="stampTray"><div class="row" id="trayRow"></div></div>
 
 <!-- 予定エディタ -->
@@ -517,6 +508,7 @@ const todayKey = dkey(today);
 let viewYear = today.getFullYear(), viewMonth = today.getMonth();
 let selectedKey = null;
 let lastDayKey = null;
+let selKey = null, lastTapKey = null, lastTapAt = 0;
 
 /* 生理計算 */
 function periodDays(){
@@ -604,6 +596,7 @@ function renderCalendar(){
     if(d.getDay()===6) cell.classList.add("sat");
     if(d.getMonth()!==viewMonth) cell.classList.add("other");
     if(k===todayKey) cell.classList.add("today");
+    if(k===(selKey||todayKey)) cell.classList.add("sel");
     if(rec && rec.period) cell.classList.add("period");
     const isPred = pred.has(k);
     if(isPred) cell.classList.add("predicted");
@@ -632,7 +625,11 @@ function renderCalendar(){
       + (isPred && info.next && k===dkey(info.next) ? '<div class="pred-lbl">予測</div>' : '')
       + (rec && rec.memo ? '<div class="memo-dot"></div>' : '');
     cell.querySelectorAll(".evt").forEach((chip, idx)=>{ const e2 = evs[idx]; if(e2) attachChipDrag(chip, e2, k); });
-    cell.addEventListener("click", ()=>{ if(Date.now()-suppressCellClick<400) return; openSheet(k); });
+    cell.addEventListener("click", ()=>{
+      if(Date.now()-suppressCellClick<400) return;
+      if(selKey===k && k===lastTapKey && Date.now()-lastTapAt<600){ openSheet(k); return; }
+      selKey = k; lastDayKey = k; lastTapKey = k; lastTapAt = Date.now(); renderCalendar();
+    });
     grid.appendChild(cell);
   }
 }
@@ -706,28 +703,6 @@ function openSheet(k){
   const d = parseKey(k); const rec = getRec(k);
   $("sheetDate").textContent = (d.getMonth()+1)+"月"+d.getDate()+"日";
   $("sheetDow").textContent = "（"+DOW[d.getDay()]+"曜日）";
-  document.querySelectorAll("#periodSeg button").forEach(b=>{
-    b.classList.toggle("sel-period", (b.dataset.period||"") === (rec.period||""));
-  });
-  document.querySelectorAll("#leaveSeg button").forEach(b=>{
-    b.classList.toggle("sel-leave", Number(b.dataset.leave) === Number(rec.leave||0));
-  });
-  const chips = $("customChips"); chips.innerHTML="";
-  if(!state.customs.length) chips.innerHTML = '<span class="none-msg">マイ項目は右上の ⚙ 設定から追加できます</span>';
-  state.customs.forEach(c=>{
-    const b = document.createElement("button");
-    b.style.color = c.color;
-    b.innerHTML = c.symbol+" <span style='color:var(--ink)'></span>";
-    b.querySelector("span").textContent = c.name;
-    if((rec.customs||[]).includes(c.id)) b.classList.add("sel");
-    b.addEventListener("click", ()=>{
-      const r = getRec(selectedKey); r.customs = r.customs||[];
-      const i = r.customs.indexOf(c.id);
-      if(i>=0) r.customs.splice(i,1); else r.customs.push(c.id);
-      cleanup(selectedKey); save(); renderAll(); openSheetRefresh();
-    });
-    chips.appendChild(b);
-  });
   const sev = $("sheetEvents"); sev.innerHTML="";
   const evs2 = eventsOn(k);
   if(!evs2.length) sev.innerHTML = '<div style="font-size:12.5px;color:var(--sub);font-weight:500;margin-bottom:6px">この日の予定はありません</div>';
@@ -752,22 +727,6 @@ function openSheet(k){
 }
 function openSheetRefresh(){ if(selectedKey) openSheet(selectedKey); }
 function closeSheet(){ $("overlay").classList.remove("on"); selectedKey=null; }
-document.querySelectorAll("#periodSeg button").forEach(b=>{
-  b.addEventListener("click", ()=>{
-    if(!selectedKey) return;
-    const r = getRec(selectedKey);
-    r.period = b.dataset.period||"";
-    cleanup(selectedKey); save(); renderAll(); openSheetRefresh();
-  });
-});
-document.querySelectorAll("#leaveSeg button").forEach(b=>{
-  b.addEventListener("click", ()=>{
-    if(!selectedKey) return;
-    const r = getRec(selectedKey);
-    r.leave = Number(b.dataset.leave);
-    cleanup(selectedKey); save(); renderAll(); openSheetRefresh();
-  });
-});
 $("memoInput").addEventListener("input", ()=>{
   if(!selectedKey) return;
   const r = getRec(selectedKey); r.memo = $("memoInput").value;
@@ -927,13 +886,17 @@ $("settingsBtn").addEventListener("click", ()=>$("settingsOverlay").classList.ad
 $("closeSettingsBtn").addEventListener("click", ()=>$("settingsOverlay").classList.remove("on"));
 $("settingsOverlay").addEventListener("click", e=>{ if(e.target.id==="settingsOverlay") $("settingsOverlay").classList.remove("on"); });
 $("addEvFromSheet").addEventListener("click", ()=>openEventEditor({date:selectedKey || todayKey}));
-$("addEventBtn").addEventListener("click", ()=>openEventEditor({date:lastDayKey || todayKey}));
+$("addEventBtn").addEventListener("click", ()=>openEventEditor({date:selKey || todayKey}));
 
 /* スタンプトレイ（ドラッグ＆ドロップ対応） */
 function buildTray(){
   const row = $("trayRow"); if(!row) return; row.innerHTML = "";
-  const items = STAMPS.map(st=>({id:st.id, name:st.name, html:st.svg}))
-    .concat(state.customs.map(c=>({id:c.id, name:c.name, html:'<span style="color:'+c.color+';font-size:25px;line-height:1">'+c.symbol+'</span>'})));
+  const items = [
+    {id:"mk-leave", kind:"leave", name:"有給", html:'<span style="color:#2fbfa5;font-size:25px;line-height:1;font-weight:800">○</span>'},
+    {id:"mk-light", kind:"period", period:"light", name:"少ない", html:'<span style="color:#ff9dbd;font-size:25px;line-height:1;font-weight:800">△</span>'},
+    {id:"mk-heavy", kind:"period", period:"heavy", name:"多い", html:'<span style="color:#e5395f;font-size:25px;line-height:1;font-weight:800">✕</span>'}
+  ].concat(STAMPS.map(st=>({id:st.id, name:st.name, html:st.svg})))
+   .concat(state.customs.map(c=>({id:c.id, kind:"custom", name:c.name, html:'<span style="color:'+c.color+';font-size:25px;line-height:1">'+c.symbol+'</span>'})));
   items.forEach(it=>{
     const b = document.createElement("button");
     b.type = "button"; b.className = "tray-item";
@@ -989,7 +952,7 @@ function attachDrag(el, it){
       if(dragCtx.hl) dragCtx.hl.classList.remove("drop-hl");
       dragCtx = null;
       if(wasDrag){
-        if(cell && cell.dataset.key) openEventEditor({date:cell.dataset.key, icon:it.id});
+        if(cell && cell.dataset.key) applyTrayItem(it, cell.dataset.key);
         else toast("カレンダーの日に重ねて離してね");
       }
     };
@@ -999,11 +962,60 @@ function attachDrag(el, it){
   });
   el.addEventListener("click", ()=>{
     if(Date.now() - suppressTrayClick < 400) return;
-    /* ドラッグしなかったタップ：最後に開いた日（なければ今日）で入力 */
-    openEventEditor({date:lastDayKey || todayKey, icon:it.id});
+    /* タップ：記録アイコンは選んだ日に入れる／予定アイコンは入力画面を開く */
+    if(it.kind) applyTrayItem(it, selKey || todayKey);
+    else openEventEditor({date:selKey || todayKey, icon:it.id});
   });
 }
 
+
+/* トレイアイコンを日へ即反映（編集画面は開かない） */
+function applyTrayItem(it, key){
+  selKey = key; lastDayKey = key;
+  if(it.kind === "stamp" || !it.kind){
+    state.events.push({id:"e"+Date.now().toString(36)+Math.floor(Math.random()*999), title:it.name, icon:it.id, color:iconColor(it.id), start:key, end:key, place:"", memo:""});
+    save(); renderAll();
+    toast(it.name + " を " + fmtJP(parseKey(key)) + " に入れました 📅");
+    return;
+  }
+  const r = getRec(key);
+  if(it.kind === "leave"){
+    r.leave = !r.leave ? 1 : (r.leave === 1 ? 0.5 : 0);
+    toast(r.leave === 1 ? "○ 有給（1日）を記録しました 🌿" : r.leave === 0.5 ? "◐ 半日有給にしました 🌿" : "有給を取り消しました");
+  }else if(it.kind === "period"){
+    if(r.period === it.period){ r.period = ""; toast("生理の記録を取り消しました"); }
+    else { r.period = it.period; toast(it.period === "light" ? "△ 少ない を記録しました 🩸" : "✕ 多い を記録しました 🩸"); }
+  }else if(it.kind === "custom"){
+    r.customs = r.customs || [];
+    const i = r.customs.indexOf(it.id);
+    if(i >= 0){ r.customs.splice(i, 1); toast(it.name + " を取り消しました"); }
+    else { r.customs.push(it.id); toast(it.name + " を記録しました 🎀"); }
+  }
+  cleanup(key); save(); renderAll();
+}
+
+/* 予定チップのタップメニュー（編集／地図／削除） */
+let menuEvent = null;
+function openEvMenu(e, chip){
+  menuEvent = e;
+  $("evMenuTitle").textContent = e.title;
+  const map = $("evMenuMap");
+  if(e.place){ map.style.display = ""; map.href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(e.place); }
+  else map.style.display = "none";
+  const m = $("evMenu"); m.classList.add("on");
+  const r = chip.getBoundingClientRect(), mw = 196;
+  let x = Math.min(Math.max(8, r.left + r.width/2 - mw/2), window.innerWidth - mw - 8);
+  let y = r.bottom + 6; if(y + 200 > window.innerHeight) y = Math.max(8, r.top - 206);
+  m.style.left = x + "px"; m.style.top = y + "px";
+}
+function closeEvMenu(){ $("evMenu").classList.remove("on"); menuEvent = null; }
+$("evMenuEdit").addEventListener("click", ()=>{ const e = menuEvent; closeEvMenu(); if(e) openEventEditor({event:e}); });
+$("evMenuDel").addEventListener("click", ()=>{
+  const e = menuEvent; closeEvMenu(); if(!e) return;
+  state.events = state.events.filter(x=>x.id!==e.id);
+  save(); renderAll(); toast("予定を削除しました 🗑");
+});
+document.addEventListener("pointerdown", e=>{ const m = $("evMenu"); if(m.classList.contains("on") && !m.contains(e.target)) closeEvMenu(); });
 
 /* 予定チップのドラッグ移動・削除 */
 document.addEventListener("contextmenu", e=>{ if(e.target.closest && e.target.closest(".day,.tray-item,.evt")) e.preventDefault(); });
@@ -1068,6 +1080,11 @@ function attachChipDrag(chip, e, dayKey){
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
     window.addEventListener("pointercancel", up);
+  });
+  chip.addEventListener("click", ev=>{
+    if(Date.now() - suppressCellClick < 400) return;
+    ev.stopPropagation();
+    openEvMenu(e, chip);
   });
 }
 
