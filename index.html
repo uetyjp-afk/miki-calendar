@@ -250,7 +250,7 @@ textarea.ev-text{min-height:64px;resize:vertical}
 .drag-ghost{position:fixed;z-index:200;width:46px;height:46px;pointer-events:none;transform:translate(-50%,-115%);filter:drop-shadow(0 6px 8px rgba(0,0,0,.3))}
 .drag-ghost svg{width:100%;height:100%}
 .drag-ghost span{font-size:36px;line-height:1}
-#trashZone{position:fixed;left:12px;right:12px;bottom:calc(94px + env(safe-area-inset-bottom));z-index:45;display:none;align-items:center;justify-content:center;height:54px;border:2.5px dashed #e5395f;border-radius:16px;background:rgba(255,240,243,.97);color:#e5395f;font-weight:800;font-size:15px}
+#trashZone{position:fixed;left:12px;right:12px;bottom:calc(94px + env(safe-area-inset-bottom));z-index:45;display:none;align-items:center;justify-content:center;height:60px;border:2.5px dashed #e5395f;border-radius:16px;background:rgba(255,240,243,.97);color:#e5395f;font-weight:800;font-size:15px}
 #trashZone.on{display:flex}
 #trashZone.hot{background:#e5395f;color:#fff;border-style:solid}
 #settingsBtn{position:absolute;right:2px;top:0;width:44px;height:44px;border:none;border-radius:50%;background:#fff;box-shadow:var(--shadow);cursor:pointer;padding:9px}
@@ -351,7 +351,7 @@ textarea.ev-text{min-height:64px;resize:vertical}
     </div>
   </div>
 
-  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v6</span></footer>
+  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v7</span></footer>
 </div>
 
 <!-- 設定画面 -->
@@ -1019,8 +1019,10 @@ function attachChipDrag(chip, e, dayKey){
       if(chipDrag.hl && chipDrag.hl !== cell) chipDrag.hl.classList.remove("drop-hl");
       if(cell) cell.classList.add("drop-hl");
       chipDrag.hl = cell;
-      chipDrag.onTrash = !!tz;
-      $("trashZone").classList.toggle("hot", !!tz);
+      const tzr = $("trashZone").getBoundingClientRect();
+      const onTz = !!tz || (mv.clientY >= tzr.top - 8 && mv.clientY <= tzr.bottom + 20);
+      chipDrag.onTrash = onTz;
+      $("trashZone").classList.toggle("hot", onTz);
     };
     const up = ()=>{
       window.removeEventListener("pointermove", move);
