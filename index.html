@@ -25,7 +25,7 @@ body{
   background:linear-gradient(180deg,#ffeef5 0%,#fff9f4 55%,#f3fbf8 100%);
   min-height:100vh;
 }
-.wrap{max-width:540px;margin:0 auto;padding:14px 12px 40px}
+.wrap{max-width:540px;margin:0 auto;padding:14px 12px 130px}
 header.app{text-align:center;padding:8px 0 2px}
 header.app h1{font-size:23px;margin:0;font-weight:800;letter-spacing:.02em}
 header.app h1 .heart{color:var(--pink-deep)}
@@ -68,7 +68,7 @@ header.app p{margin:2px 0 0;color:var(--sub);font-size:12px;font-weight:500}
 .week div:nth-child(1){color:var(--sun)} .week div:nth-child(7){color:var(--sat)}
 .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 .day{
-  position:relative;min-height:58px;border-radius:14px;padding:4px 2px 3px;cursor:pointer;
+  position:relative;min-height:66px;border-radius:14px;padding:4px 2px 3px;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;background:#fff;border:2px solid transparent;
 }
 .day:active{transform:scale(.96)}
@@ -207,6 +207,47 @@ footer.note{text-align:center;color:var(--sub);font-size:11px;margin-top:18px;fo
   font-family:inherit;font-size:13.5px;font-weight:800;cursor:pointer;
 }
 .auto-note{text-align:center;font-size:11px;color:var(--sub);margin-top:9px;font-weight:500}
+
+/* 予定チップ */
+.day .evts{display:flex;flex-direction:column;gap:2px;width:100%;margin-top:1px}
+.evt{display:flex;align-items:center;gap:2px;font-size:10px;font-weight:800;line-height:1.3;padding:1px 3px;border-radius:5px;max-width:100%}
+.evt-tt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.evt-ic{display:inline-flex;width:11px;height:11px;flex:none}
+.evt-ic svg{width:100%;height:100%}
+.evt-ic span{font-size:10px !important}
+.evt.cont-l{border-top-left-radius:0;border-bottom-left-radius:0;margin-left:-7px;padding-left:8px}
+.evt.cont-r{border-top-right-radius:0;border-bottom-right-radius:0;margin-right:-7px}
+.evt-more{font-size:9px;color:var(--sub);font-weight:800;padding-left:2px}
+.day.drop-hl{outline:3px solid var(--pink-deep);outline-offset:-2px}
+/* 日シートの予定行 */
+.ev-row{display:flex;align-items:center;gap:8px;background:var(--pink-bg);border-radius:12px;padding:8px 10px;margin-bottom:6px;cursor:pointer}
+.ev-row .tt{flex:1;font-weight:800;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev-row .pd{font-size:11px;color:var(--sub);font-weight:700;flex:none}
+.evt-ic-lg{display:inline-flex;width:22px;height:22px;flex:none}
+.evt-ic-lg svg{width:100%;height:100%}
+.add-ev-btn{width:100%;border:2px dashed var(--line);background:#fff;color:var(--pink-deep);border-radius:14px;padding:10px;font-family:inherit;font-size:13.5px;font-weight:800;cursor:pointer}
+/* 予定エディタ */
+.ev-text{width:100%;border:2px solid var(--line);border-radius:12px;padding:11px 12px;font-family:inherit;font-size:15px;font-weight:500;color:var(--ink)}
+.ev-text:focus{outline:none;border-color:var(--pink)}
+.ev-icons{display:flex;flex-wrap:wrap;gap:6px}
+.ev-ic-btn{width:42px;height:42px;border:2px solid var(--line);border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.ev-ic-btn svg{width:26px;height:26px}
+.ev-ic-btn.sel{border-color:var(--pink-deep);background:var(--pink-soft)}
+.ev-dates{display:flex;align-items:center;gap:8px}
+.ev-dates input{flex:1;min-width:0;border:2px solid var(--line);border-radius:12px;padding:10px;font-family:inherit;font-size:14.5px;font-weight:700;color:var(--ink)}
+.ev-dates input:focus{outline:none;border-color:var(--pink)}
+/* ＋ボタンとスタンプトレイ */
+#addEventBtn{position:fixed;right:16px;bottom:104px;z-index:41;width:56px;height:56px;border-radius:50%;border:none;background:var(--pink-deep);color:#fff;font-size:30px;font-weight:800;box-shadow:0 8px 20px rgba(0,0,0,.25);cursor:pointer;line-height:1}
+#addEventBtn:active{transform:scale(.94)}
+#stampTray{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255,255,.97);box-shadow:0 -4px 16px rgba(74,40,56,.10);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+#stampTray .row{display:flex;gap:2px;overflow-x:auto;max-width:540px;margin:0 auto}
+.tray-item{flex:none;width:56px;border:none;background:none;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 0 2px;border-radius:12px;touch-action:pan-x}
+.tray-item .nm{font-size:9.5px;font-weight:800;color:var(--sub)}
+.tray-ic{display:inline-flex;width:28px;height:28px}
+.tray-ic svg{width:100%;height:100%}
+.drag-ghost{position:fixed;z-index:200;width:46px;height:46px;pointer-events:none;transform:translate(-50%,-115%);filter:drop-shadow(0 6px 8px rgba(0,0,0,.3))}
+.drag-ghost svg{width:100%;height:100%}
+.drag-ghost span{font-size:36px;line-height:1}
 .toast{
   position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;
   padding:11px 20px;border-radius:99px;font-size:13.5px;font-weight:700;z-index:99;transition:.3s;opacity:0;pointer-events:none;
@@ -338,7 +379,7 @@ footer.note{text-align:center;color:var(--sub);font-size:11px;margin-top:18px;fo
     </div>
   </div>
 
-  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v2</span></footer>
+  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v3</span></footer>
 </div>
 
 <!-- 日モーダル -->
@@ -364,6 +405,10 @@ footer.note{text-align:center;color:var(--sub);font-size:11px;margin-top:18px;fo
     <h4>🎀 マイ項目</h4>
     <div class="chips" id="customChips"></div>
 
+    <h4>📅 予定</h4>
+    <div id="sheetEvents"></div>
+    <button class="add-ev-btn" id="addEvFromSheet">＋ 予定を追加</button>
+
     <h4>📝 メモ</h4>
     <textarea id="memoInput" placeholder="体調や予定のメモ…"></textarea>
 
@@ -372,6 +417,32 @@ footer.note{text-align:center;color:var(--sub);font-size:11px;margin-top:18px;fo
       <button class="close" id="closeSheetBtn">閉じる ♡</button>
     </div>
     <div class="auto-note">選んだら自動で保存されます</div>
+  </div>
+</div>
+
+
+<button id="addEventBtn" aria-label="予定を追加">＋</button>
+<div id="stampTray"><div class="row" id="trayRow"></div></div>
+
+<!-- 予定エディタ -->
+<div class="overlay" id="evOverlay" style="z-index:60">
+  <div class="sheet">
+    <h3 id="evSheetTitle">予定を追加</h3>
+    <h4>✏ タイトル</h4>
+    <input type="text" id="evTitle" class="ev-text" placeholder="例：病院、美容院、早番…" maxlength="30">
+    <h4>🎀 アイコン</h4>
+    <div class="ev-icons" id="evIconPicker"></div>
+    <h4>🎨 色</h4>
+    <div class="color-picker" id="evColorPicker"></div>
+    <h4>🗓 期間</h4>
+    <div class="ev-dates">
+      <input type="date" id="evStart"><span style="font-weight:800;color:var(--sub)">〜</span><input type="date" id="evEnd">
+    </div>
+    <div class="sheet-btns">
+      <button class="clear" id="evDeleteBtn">削除</button>
+      <button class="clear" id="evCancelBtn" style="color:var(--sub)">やめる</button>
+      <button class="close" id="evSaveBtn">保存する</button>
+    </div>
   </div>
 </div>
 
@@ -391,7 +462,7 @@ function load(){
   }catch(e){}
   return normalize({
     settings:{ paidTotal:20, paidAdjust:0, theme:"pink", showData:true, showPrediction:true },
-    days:{},
+    days:{}, events:[],
     customs:[
       {id:"c-hospital", name:"病院", symbol:"✚", color:"#4a7dd4"},
       {id:"c-trip", name:"旅行・おでかけ", symbol:"✈", color:"#9b8cf2"},
@@ -401,7 +472,7 @@ function load(){
 }
 function normalize(s){
   s.settings = Object.assign({paidTotal:20, paidAdjust:0, theme:"pink", showData:true, showPrediction:true}, s.settings||{});
-  s.days = s.days||{}; s.customs = s.customs||[];
+  s.days = s.days||{}; s.customs = s.customs||[]; s.events = s.events||[];
   return s;
 }
 function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
@@ -417,6 +488,7 @@ const today = new Date(); today.setHours(0,0,0,0);
 const todayKey = dkey(today);
 let viewYear = today.getFullYear(), viewMonth = today.getMonth();
 let selectedKey = null;
+let lastDayKey = null;
 
 /* 生理計算 */
 function periodDays(){
@@ -519,7 +591,16 @@ function renderCalendar(){
         if(c) marks+='<span class="mark custom" style="color:'+c.color+'">'+c.symbol+'</span>';
       });
     }
+    const evs = eventsOn(k);
+    let evHtml = "";
+    evs.slice(0,2).forEach(e=>{
+      const col = e.color || "#f4528b";
+      evHtml += '<div class="evt'+(k>e.start?" cont-l":"")+(k<e.end?" cont-r":"")+'" style="background:'+col+'2b;color:'+col+'"><span class="evt-ic">'+iconHTML(e.icon)+'</span><span class="evt-tt">'+esc(e.title)+'</span></div>';
+    });
+    if(evs.length>2) evHtml += '<div class="evt-more">+'+(evs.length-2)+'件</div>';
+    cell.dataset.key = k;
     cell.innerHTML = '<div class="dnum">'+d.getDate()+'</div><div class="marks">'+marks+'</div>'
+      + (evHtml ? '<div class="evts">'+evHtml+'</div>' : '')
       + (isPred && info.next && k===dkey(info.next) ? '<div class="pred-lbl">予測</div>' : '')
       + (rec && rec.memo ? '<div class="memo-dot"></div>' : '');
     cell.addEventListener("click", ()=>openSheet(k));
@@ -583,7 +664,7 @@ function renderCustomList(){
     row.appendChild(del); list.appendChild(row);
   });
 }
-function renderAll(){ renderLeave(); renderCalendar(); renderData(); renderCustomList(); }
+function renderAll(){ renderLeave(); renderCalendar(); renderData(); renderCustomList(); buildTray(); }
 
 /* 日モーダル */
 function getRec(k){ return state.days[k] || (state.days[k]={period:"",leave:0,customs:[],memo:""}); }
@@ -592,7 +673,7 @@ function cleanup(k){
   if(r && !r.period && !r.leave && !(r.customs&&r.customs.length) && !(r.memo&&r.memo.trim())) delete state.days[k];
 }
 function openSheet(k){
-  selectedKey = k;
+  selectedKey = k; lastDayKey = k;
   const d = parseKey(k); const rec = getRec(k);
   $("sheetDate").textContent = (d.getMonth()+1)+"月"+d.getDate()+"日";
   $("sheetDow").textContent = "（"+DOW[d.getDay()]+"曜日）";
@@ -617,6 +698,17 @@ function openSheet(k){
       cleanup(selectedKey); save(); renderAll(); openSheetRefresh();
     });
     chips.appendChild(b);
+  });
+  const sev = $("sheetEvents"); sev.innerHTML="";
+  const evs2 = eventsOn(k);
+  if(!evs2.length) sev.innerHTML = '<div style="font-size:12.5px;color:var(--sub);font-weight:500;margin-bottom:6px">この日の予定はありません</div>';
+  evs2.forEach(e=>{
+    const row = document.createElement("div"); row.className="ev-row";
+    const pd = e.start===e.end ? "" : fmtJP(parseKey(e.start))+"〜"+fmtJP(parseKey(e.end));
+    row.innerHTML = '<span class="evt-ic-lg">'+iconHTML(e.icon)+'</span><span class="tt"></span>'+(pd?'<span class="pd">'+pd+'</span>':'');
+    row.querySelector(".tt").textContent = e.title;
+    row.addEventListener("click", ()=>openEventEditor({event:e}));
+    sev.appendChild(row);
   });
   $("memoInput").value = rec.memo||"";
   $("overlay").classList.add("on");
@@ -685,6 +777,172 @@ $("addCustomBtn").addEventListener("click", ()=>{
   $("newName").value="";
   save(); renderAll(); toast("項目「"+name+"」を追加しました 🎀");
 });
+
+
+/* ===== スタンプ（オリジナルアイコン）と予定 ===== */
+const FACE_EYES = '<circle cx="19" cy="27" r="1.9" fill="#4a3540"/><circle cx="29" cy="27" r="1.9" fill="#4a3540"/><path d="M21 32.5q3 2.6 6 0" stroke="#4a3540" stroke-width="1.8" fill="none" stroke-linecap="round"/><ellipse cx="15.3" cy="31" rx="2.5" ry="1.6" fill="#ffb3c9" opacity=".85"/><ellipse cx="32.7" cy="31" rx="2.5" ry="1.6" fill="#ffb3c9" opacity=".85"/>';
+const STAMPS = [
+  {id:"st-hospital", name:"病院", color:"#4a7dd4", svg:'<svg viewBox="0 0 48 48"><rect x="5" y="5" width="38" height="38" rx="11" fill="#4a7dd4"/><path d="M20 12h8v8h8v8h-8v8h-8v-8h-8v-8h8z" fill="#fff"/></svg>'},
+  {id:"st-beauty", name:"美容院", color:"#f4528b", svg:'<svg viewBox="0 0 48 48"><circle cx="14" cy="34" r="6.5" fill="none" stroke="#f4528b" stroke-width="3.6"/><circle cx="14" cy="14" r="6.5" fill="none" stroke="#f4528b" stroke-width="3.6"/><path d="M19.5 17.5 L41 33 M19.5 30.5 L41 15" stroke="#f4528b" stroke-width="3.6" stroke-linecap="round"/></svg>'},
+  {id:"st-yusho", name:"勇翔", color:"#4a7dd4", svg:'<svg viewBox="0 0 48 48"><circle cx="24" cy="25" r="14" fill="#ffe3c9"/><path d="M10 24a14 14 0 0 1 28 0z" fill="#5a4632"/>'+FACE_EYES+'</svg>'},
+  {id:"st-manami", name:"愛海", color:"#f4528b", svg:'<svg viewBox="0 0 48 48"><circle cx="24" cy="23" r="16" fill="#8a5a3b"/><circle cx="24" cy="26" r="12.5" fill="#ffe3c9"/><path d="M11.5 25a12.5 12.5 0 0 1 25 0z" fill="#8a5a3b"/>'+FACE_EYES+'<path d="M33 8l-5-3.4L29.4 10zM35 8l5-3.4L38.6 10z" fill="#f4528b"/><circle cx="34" cy="8.6" r="2.6" fill="#f4528b"/></svg>'},
+  {id:"st-seitai", name:"整体", color:"#2fbfa5", svg:'<svg viewBox="0 0 48 48"><circle cx="22" cy="10.5" r="5.5" fill="#2fbfa5"/><path d="M8 35c4-9 9-13 14-13s10 4 14 13c.9 2-1.2 4-3.2 2.8C29 34.6 25.8 33 22 33s-7 1.6-10.8 4.8C9.2 39 7.1 37 8 35z" fill="#2fbfa5"/><path d="M39 4l1.3 3L43 8.2 40.3 9.5 39 12.5 37.7 9.5 35 8.2 37.7 7z" fill="#f2b705"/></svg>'},
+  {id:"st-hayaban", name:"早番", color:"#ff8c42", svg:'<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="10" fill="#ff8c42"/><g stroke="#ff8c42" stroke-width="3.6" stroke-linecap="round"><path d="M24 4v5M24 39v5M4 24h5M39 24h5M10.5 10.5l3.5 3.5M34 34l3.5 3.5M37.5 10.5L34 14M14 34l-3.5 3.5"/></g></svg>'},
+  {id:"st-kagi", name:"鍵", color:"#d99a06", svg:'<svg viewBox="0 0 48 48"><circle cx="16.5" cy="16.5" r="9" fill="none" stroke="#d99a06" stroke-width="4.2"/><path d="M23 23 L40 40" stroke="#d99a06" stroke-width="4.2" stroke-linecap="round"/><path d="M30.5 33.5l6.5-2.5M35 38l6.5-2.5" stroke="#d99a06" stroke-width="3.6" stroke-linecap="round"/></svg>'}
+];
+function stampOf(id){ return STAMPS.find(x=>x.id===id); }
+function esc(t){ return String(t||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+function iconHTML(id){
+  const st = stampOf(id); if(st) return st.svg;
+  const c = state.customs.find(x=>x.id===id);
+  if(c) return '<span style="color:'+c.color+'">'+c.symbol+'</span>';
+  return '';
+}
+function iconName(id){
+  const st = stampOf(id); if(st) return st.name;
+  const c = state.customs.find(x=>x.id===id); return c ? c.name : "";
+}
+function iconColor(id){
+  const st = stampOf(id); if(st) return st.color;
+  const c = state.customs.find(x=>x.id===id); return c ? c.color : "#f4528b";
+}
+function eventsOn(k){
+  return (state.events||[]).filter(e=>e.start<=k && k<=e.end)
+    .sort((a,b)=> a.start<b.start ? -1 : a.start>b.start ? 1 : (a.title<b.title ? -1 : 1));
+}
+
+/* 予定エディタ */
+let evEditId = null, evIcon = "", evColor = "#f4528b";
+function openEventEditor(opts){
+  opts = opts||{};
+  const e = opts.event || null;
+  evEditId = e ? e.id : null;
+  evIcon = e ? (e.icon||"") : (opts.icon||"");
+  evColor = e ? (e.color || iconColor(evIcon)) : iconColor(evIcon);
+  $("evTitle").value = e ? e.title : (evIcon ? iconName(evIcon) : "");
+  $("evStart").value = e ? e.start : (opts.date || todayKey);
+  $("evEnd").value = e ? e.end : (opts.date || todayKey);
+  $("evDeleteBtn").style.display = e ? "" : "none";
+  $("evSheetTitle").textContent = e ? "予定を編集" : "予定を追加";
+  buildEvPickers();
+  $("evOverlay").classList.add("on");
+}
+function closeEventEditor(){ $("evOverlay").classList.remove("on"); }
+function buildEvPickers(){
+  const ip = $("evIconPicker"); ip.innerHTML = "";
+  const mk = (id, html, title)=>{
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "ev-ic-btn" + (evIcon===id ? " sel" : "");
+    b.innerHTML = html; if(title) b.title = title;
+    b.addEventListener("click", ()=>{ evIcon = id; evColor = iconColor(id); buildEvPickers(); });
+    ip.appendChild(b);
+  };
+  mk("", '<span style="font-size:11px;font-weight:800;color:var(--sub)">なし</span>', "アイコンなし");
+  STAMPS.forEach(st=>mk(st.id, st.svg, st.name));
+  state.customs.forEach(c=>mk(c.id, '<span style="color:'+c.color+';font-size:20px;line-height:1">'+c.symbol+'</span>', c.name));
+  const cp = $("evColorPicker"); cp.innerHTML = "";
+  COLORS.forEach(col=>{
+    const b = document.createElement("button");
+    b.type = "button"; b.style.background = col;
+    if(evColor === col) b.classList.add("sel");
+    b.addEventListener("click", ()=>{ evColor = col; buildEvPickers(); });
+    cp.appendChild(b);
+  });
+}
+$("evSaveBtn").addEventListener("click", ()=>{
+  const title = $("evTitle").value.trim();
+  if(!title){ toast("タイトルを入れてね ✏"); $("evTitle").focus(); return; }
+  let st = $("evStart").value || todayKey, en = $("evEnd").value || st;
+  if(en < st){ const t = st; st = en; en = t; }
+  if(evEditId){
+    const e = state.events.find(x=>x.id===evEditId);
+    if(e){ e.title = title; e.icon = evIcon; e.color = evColor; e.start = st; e.end = en; }
+  }else{
+    state.events.push({id:"e"+Date.now().toString(36)+Math.floor(Math.random()*999), title:title, icon:evIcon, color:evColor, start:st, end:en});
+  }
+  save(); renderAll(); closeEventEditor();
+  if(selectedKey && $("overlay").classList.contains("on")) openSheet(selectedKey);
+  toast("予定を保存しました 📅");
+});
+$("evDeleteBtn").addEventListener("click", ()=>{
+  if(!evEditId) return;
+  if(!confirm("この予定を削除しますか？")) return;
+  state.events = state.events.filter(x=>x.id!==evEditId);
+  save(); renderAll(); closeEventEditor();
+  if(selectedKey && $("overlay").classList.contains("on")) openSheet(selectedKey);
+  toast("予定を削除しました");
+});
+$("evCancelBtn").addEventListener("click", closeEventEditor);
+$("evOverlay").addEventListener("click", e=>{ if(e.target.id==="evOverlay") closeEventEditor(); });
+$("addEvFromSheet").addEventListener("click", ()=>openEventEditor({date:selectedKey || todayKey}));
+$("addEventBtn").addEventListener("click", ()=>openEventEditor({date:lastDayKey || todayKey}));
+
+/* スタンプトレイ（ドラッグ＆ドロップ対応） */
+function buildTray(){
+  const row = $("trayRow"); if(!row) return; row.innerHTML = "";
+  const items = STAMPS.map(st=>({id:st.id, name:st.name, html:st.svg}))
+    .concat(state.customs.map(c=>({id:c.id, name:c.name, html:'<span style="color:'+c.color+';font-size:25px;line-height:1">'+c.symbol+'</span>'})));
+  items.forEach(it=>{
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "tray-item";
+    b.innerHTML = '<span class="tray-ic">'+it.html+'</span><span class="nm"></span>';
+    b.querySelector(".nm").textContent = it.name;
+    attachDrag(b, it);
+    row.appendChild(b);
+  });
+}
+let dragCtx = null;
+let suppressTrayClick = 0;
+function attachDrag(el, it){
+  el.addEventListener("pointerdown", e=>{
+    const sx = e.clientX, sy = e.clientY;
+    dragCtx = {it:it, started:false, dead:false, ghost:null, hl:null};
+    const move = ev=>{
+      if(!dragCtx || dragCtx.dead) return;
+      const dx = ev.clientX - sx, dy = ev.clientY - sy;
+      if(!dragCtx.started){
+        if(dy < -12 && Math.abs(dy) > Math.abs(dx)){
+          dragCtx.started = true;
+          const g = document.createElement("div");
+          g.className = "drag-ghost"; g.innerHTML = it.html;
+          document.body.appendChild(g); dragCtx.ghost = g;
+        }else if(Math.abs(dx) > 26 && Math.abs(dx) > Math.abs(dy)){
+          dragCtx.dead = true; return;
+        }else return;
+      }
+      dragCtx.ghost.style.left = ev.clientX + "px";
+      dragCtx.ghost.style.top = ev.clientY + "px";
+      const under = document.elementFromPoint(ev.clientX, ev.clientY);
+      const cell = under && under.closest ? under.closest(".day") : null;
+      if(dragCtx.hl && dragCtx.hl !== cell) dragCtx.hl.classList.remove("drop-hl");
+      if(cell) cell.classList.add("drop-hl");
+      dragCtx.hl = cell;
+    };
+    const up = ()=>{
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
+      if(!dragCtx) return;
+      const wasDrag = dragCtx.started, cell = dragCtx.hl;
+      if(wasDrag){ suppressTrayClick = Date.now(); }
+      if(dragCtx.ghost) dragCtx.ghost.remove();
+      if(dragCtx.hl) dragCtx.hl.classList.remove("drop-hl");
+      dragCtx = null;
+      if(wasDrag){
+        if(cell && cell.dataset.key) openEventEditor({date:cell.dataset.key, icon:it.id});
+        else toast("カレンダーの日に重ねて離してね");
+      }
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
+  });
+  el.addEventListener("click", ()=>{
+    if(Date.now() - suppressTrayClick < 400) return;
+    /* ドラッグしなかったタップ：最後に開いた日（なければ今日）で入力 */
+    openEventEditor({date:lastDayKey || todayKey, icon:it.id});
+  });
+}
 
 /* 設定・バックアップ */
 $("paidTotalInput").value = state.settings.paidTotal;
