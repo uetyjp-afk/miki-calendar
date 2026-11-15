@@ -271,6 +271,13 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .ev-title-row .ev-text{flex:1}
 #evTitleIcon{width:42px;height:42px;flex:none;display:flex;align-items:center;justify-content:center;background:var(--pink-soft);border-radius:12px}
 #evTitleIcon svg{width:30px;height:30px}
+.mark{display:inline-block}
+.mark.grab{outline:2px solid var(--pink-deep);outline-offset:1px;border-radius:50%;transform:scale(1.3)}
+#markMenu{position:fixed;z-index:95;width:196px;background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.28);padding:6px;display:none}
+#markMenu.on{display:block}
+#markMenu .evm-title{font-weight:800;font-size:13.5px;padding:7px 10px 5px;color:var(--ink)}
+#markMenu button{display:block;width:100%;text-align:left;background:none;border:none;border-top:1px solid var(--line);padding:11px 10px;font-size:14px;font-weight:700;color:var(--ink);cursor:pointer;font-family:inherit;box-sizing:border-box}
+#markMenu .del{color:#e5395f}
 .toast{
   position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;
   padding:11px 20px;border-radius:99px;font-size:13.5px;font-weight:700;z-index:99;transition:.3s;opacity:0;pointer-events:none;
@@ -365,7 +372,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
     </div>
   </div>
 
-  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v11</span></footer>
+  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v12</span></footer>
 </div>
 
 <!-- 設定画面 -->
@@ -440,6 +447,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
 <button id="addEventBtn" aria-label="予定を追加">＋</button>
 <div id="trashZone">🗑 ここに持ってくると削除</div>
 <div id="evMenu"><div class="evm-title" id="evMenuTitle"></div><button id="evMenuEdit">✏ 予定を編集</button><a id="evMenuMap" target="_blank" rel="noopener">📍 地図を見る</a><button id="evMenuDel" class="del">🗑 予定を削除</button></div>
+<div id="markMenu"><div class="evm-title" id="markMenuTitle"></div><div id="markMenuBtns"></div></div>
 <div id="stampTray"><div class="row" id="trayRow"></div></div>
 
 <!-- 予定エディタ -->
@@ -563,12 +571,12 @@ function predictedKeys(){
 function leaveUsed(){
   return Object.values(state.days).reduce((s,d)=>s+(d && d.leave ? Number(d.leave):0),0);
 }
-function fmtNum(n){ return (Math.round(n*10)/10).toString().replace(/\.0$/,""); }
+function fmtNum(n){ return parseFloat((Math.round(n*4)/4).toFixed(2)).toString(); }
 
 /* 描画 */
 const $ = id=>document.getElementById(id);
 function leaveTotal(){ return (Number(state.settings.paidTotal)||0)+(Number(state.settings.paidAdjust)||0); }
-function leaveRemain(){ return Math.round((leaveTotal()-leaveUsed())*10)/10; }
+function leaveRemain(){ return Math.round((leaveTotal()-leaveUsed())*4)/4; }
 function renderLeave(){
   const total = leaveTotal();
   const used = leaveUsed();
@@ -606,14 +614,15 @@ function renderCalendar(){
     if(isPred) cell.classList.add("predicted");
     let marks="";
     if(rec){
-      if(rec.period==="light") marks+='<span class="mark light">△</span>';
-      if(rec.period==="normal") marks+='<span class="mark normal">●</span>';
-      if(rec.period==="heavy") marks+='<span class="mark heavy">✕</span>';
-      if(rec.leave===1) marks+='<span class="mark leave">○</span>';
-      if(rec.leave===0.5) marks+='<span class="mark half">◐</span>';
+      if(rec.period==="light") marks+='<span class="mark light" data-mk="period" data-mv="light">△</span>';
+      if(rec.period==="normal") marks+='<span class="mark normal" data-mk="period" data-mv="normal">●</span>';
+      if(rec.period==="heavy") marks+='<span class="mark heavy" data-mk="period" data-mv="heavy">✕</span>';
+      if(rec.leave===1) marks+='<span class="mark leave" data-mk="leave" data-mv="1">○</span>';
+      if(rec.leave===0.5) marks+='<span class="mark half" data-mk="leave" data-mv="0.5">◐</span>';
+      if(rec.leave===0.25) marks+='<span class="mark qtr" data-mk="leave" data-mv="0.25">◔</span>';
       (rec.customs||[]).forEach(cid=>{
         const c = state.customs.find(x=>x.id===cid);
-        if(c) marks+='<span class="mark custom" style="color:'+c.color+'">'+c.symbol+'</span>';
+        if(c) marks+='<span class="mark custom" data-mk="custom" data-mv="'+c.id+'" style="color:'+c.color+'">'+c.symbol+'</span>';
       });
     }
     const evs = eventsOn(k);
@@ -629,6 +638,7 @@ function renderCalendar(){
       + (isPred && info.next && k===dkey(info.next) ? '<div class="pred-lbl">予測</div>' : '')
       + (rec && rec.memo ? '<div class="memo-dot"></div>' : '');
     cell.querySelectorAll(".evt").forEach((chip, idx)=>{ const e2 = evs[idx]; if(e2) attachChipDrag(chip, e2, k); });
+    cell.querySelectorAll(".mark[data-mk]").forEach(m=>attachMarkPress(m, k));
     cell.addEventListener("click", ()=>{
       if(Date.now()-suppressCellClick<400) return;
       if(selKey===k && k===lastTapKey && Date.now()-lastTapAt<600){ openSheet(k); return; }
@@ -897,7 +907,9 @@ $("addEventBtn").addEventListener("click", ()=>openEventEditor({date:selKey || t
 function buildTray(){
   const row = $("trayRow"); if(!row) return; row.innerHTML = "";
   const items = [
-    {id:"mk-leave", kind:"leave", name:"有給", html:'<span style="color:#2fbfa5;font-size:25px;line-height:1;font-weight:800">○</span>'},
+    {id:"mk-leave", kind:"leave", value:1, name:"有給", html:'<span style="color:#2fbfa5;font-size:25px;line-height:1;font-weight:800">○</span>'},
+    {id:"mk-half", kind:"leave", value:0.5, name:"半休", html:'<span style="color:#57c9ae;font-size:25px;line-height:1;font-weight:800">◐</span>'},
+    {id:"mk-2h", kind:"leave", value:0.25, name:"2時間", html:'<span style="color:#8fd8c7;font-size:25px;line-height:1;font-weight:800">◔</span>'},
     {id:"mk-light", kind:"period", period:"light", name:"少ない", html:'<span style="color:#ff9dbd;font-size:25px;line-height:1;font-weight:800">△</span>'},
     {id:"mk-heavy", kind:"period", period:"heavy", name:"多い", html:'<span style="color:#e5395f;font-size:25px;line-height:1;font-weight:800">✕</span>'}
   ].concat(STAMPS.map(st=>({id:st.id, name:st.name, html:st.svg})))
@@ -985,8 +997,8 @@ function applyTrayItem(it, key){
   }
   const r = getRec(key);
   if(it.kind === "leave"){
-    r.leave = !r.leave ? 1 : (r.leave === 1 ? 0.5 : 0);
-    toast(r.leave === 1 ? "○ 有給（1日）を記録しました 🌿" : r.leave === 0.5 ? "◐ 半日有給にしました 🌿" : "有給を取り消しました");
+    if(r.leave === it.value){ r.leave = 0; toast("お休みの記録を取り消しました"); }
+    else { r.leave = it.value; toast(it.value === 1 ? "○ 有給（1日）を記録しました 🌿" : it.value === 0.5 ? "◐ 半休を記録しました 🌿" : "◔ 2時間有給を記録しました 🌿"); }
   }else if(it.kind === "period"){
     if(r.period === it.period){ r.period = ""; toast("生理の記録を取り消しました"); }
     else { r.period = it.period; toast(it.period === "light" ? "△ 少ない を記録しました 🩸" : "✕ 多い を記録しました 🩸"); }
@@ -1021,6 +1033,132 @@ $("evMenuDel").addEventListener("click", ()=>{
   save(); renderAll(); toast("予定を削除しました 🗑");
 });
 document.addEventListener("pointerdown", e=>{ const m = $("evMenu"); if(m.classList.contains("on") && !m.contains(e.target)) closeEvMenu(); });
+
+/* 記録マーク（○△✕など）の長押しメニュー・移動・削除 */
+function setMark(key, mk, mv){
+  const r = getRec(key);
+  if(mk === "leave") r.leave = Number(mv);
+  else if(mk === "period") r.period = mv;
+  cleanup(key); save(); renderAll();
+}
+function removeMark(key, mk, mv){
+  const r = state.days[key]; if(!r) return;
+  if(mk === "leave") r.leave = 0;
+  else if(mk === "period") r.period = "";
+  else if(mk === "custom") r.customs = (r.customs || []).filter(id=>id !== mv);
+  cleanup(key); save(); renderAll();
+  toast("記録を削除しました 🗑");
+}
+function moveMark(from, to, mk, mv){
+  const rf = state.days[from]; if(!rf) return;
+  const rt = getRec(to);
+  if(mk === "leave"){ rt.leave = Number(mv); rf.leave = 0; }
+  else if(mk === "period"){ rt.period = mv; rf.period = ""; }
+  else if(mk === "custom"){
+    rt.customs = rt.customs || [];
+    if(!rt.customs.includes(mv)) rt.customs.push(mv);
+    rf.customs = (rf.customs || []).filter(id=>id !== mv);
+  }
+  cleanup(from); cleanup(to); save(); renderAll();
+  toast("記録を " + fmtJP(parseKey(to)) + " に移動しました");
+}
+function openMarkMenu(key, mk, mv, anchor){
+  const title = $("markMenuTitle"), box = $("markMenuBtns"); box.innerHTML = "";
+  const addBtn = (label, fn)=>{
+    const b = document.createElement("button"); b.type = "button"; b.textContent = label;
+    b.addEventListener("click", ()=>{ closeMarkMenu(); fn(); });
+    box.appendChild(b);
+  };
+  if(mk === "leave"){
+    title.textContent = "お休みの記録";
+    addBtn("○ 1日にする", ()=>setMark(key, "leave", 1));
+    addBtn("◐ 半日にする", ()=>setMark(key, "leave", 0.5));
+    addBtn("◔ 2時間にする", ()=>setMark(key, "leave", 0.25));
+  }else if(mk === "period"){
+    title.textContent = "生理の記録";
+    addBtn("△ 少ないにする", ()=>setMark(key, "period", "light"));
+    addBtn("✕ 多いにする", ()=>setMark(key, "period", "heavy"));
+  }else{
+    const c = state.customs.find(x=>x.id === mv);
+    title.textContent = c ? c.name : "記録";
+  }
+  const del = document.createElement("button");
+  del.type = "button"; del.className = "del"; del.textContent = "🗑 削除する";
+  del.addEventListener("click", ()=>{ closeMarkMenu(); removeMark(key, mk, mv); });
+  box.appendChild(del);
+  const m = $("markMenu"); m.classList.add("on");
+  const r = anchor.getBoundingClientRect(), mw = 196;
+  let x = Math.min(Math.max(8, r.left + r.width/2 - mw/2), window.innerWidth - mw - 8);
+  let y = r.bottom + 6; if(y + 240 > window.innerHeight) y = Math.max(8, r.top - 246);
+  m.style.left = x + "px"; m.style.top = y + "px";
+}
+function closeMarkMenu(){ $("markMenu").classList.remove("on"); }
+document.addEventListener("pointerdown", e=>{ const m = $("markMenu"); if(m.classList.contains("on") && !m.contains(e.target)) closeMarkMenu(); });
+function attachMarkPress(el, key){
+  el.addEventListener("pointerdown", ev=>{
+    const sx = ev.clientX, sy = ev.clientY, downAt = Date.now();
+    const mk = el.dataset.mk, mv = el.dataset.mv;
+    let activated = false, dragging = false, cancelled = false;
+    let ghost = null, hl = null, onTrash = false;
+    const timer = setTimeout(()=>{
+      if(cancelled) return;
+      activated = true;
+      el.classList.add("grab");
+      ghost = document.createElement("div");
+      ghost.className = "drag-ghost";
+      ghost.innerHTML = '<span style="font-size:30px;line-height:1">' + el.textContent + '</span>';
+      ghost.style.left = sx + "px"; ghost.style.top = sy + "px";
+      document.body.appendChild(ghost);
+      try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}
+      openMarkMenu(key, mk, mv, el);
+    }, 400);
+    const move = mv2=>{
+      const dx = mv2.clientX - sx, dy = mv2.clientY - sy;
+      if(!activated){
+        if(Math.hypot(dx, dy) > 22){ cancelled = true; clearTimeout(timer); }
+        return;
+      }
+      if(!dragging){
+        if(Math.hypot(dx, dy) < 6) return;
+        dragging = true;
+        closeMarkMenu();
+        $("trashZone").classList.add("on");
+      }
+      ghost.style.left = mv2.clientX + "px";
+      ghost.style.top = mv2.clientY + "px";
+      const under = document.elementFromPoint(mv2.clientX, mv2.clientY);
+      const cell = under && under.closest ? under.closest(".day") : null;
+      const tz = under && under.closest ? under.closest("#trashZone") : null;
+      if(hl && hl !== cell) hl.classList.remove("drop-hl");
+      if(cell) cell.classList.add("drop-hl");
+      hl = cell;
+      const tzr = $("trashZone").getBoundingClientRect();
+      onTrash = !!tz || (mv2.clientY >= tzr.top - 8 && mv2.clientY <= tzr.bottom + 20);
+      $("trashZone").classList.toggle("hot", onTrash);
+    };
+    const up = ()=>{
+      clearTimeout(timer);
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
+      el.classList.remove("grab");
+      if(ghost) ghost.remove();
+      if(hl) hl.classList.remove("drop-hl");
+      $("trashZone").classList.remove("on"); $("trashZone").classList.remove("hot");
+      if(!activated){
+        if(!cancelled && Date.now() - downAt >= 380){ suppressCellClick = Date.now(); openMarkMenu(key, mk, mv, el); }
+        return;
+      }
+      suppressCellClick = Date.now();
+      if(!dragging) return;
+      if(onTrash) removeMark(key, mk, mv);
+      else if(hl && hl.dataset.key && hl.dataset.key !== key) moveMark(key, hl.dataset.key, mk, mv);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
+  });
+}
 
 /* 予定チップのドラッグ移動・削除 */
 document.addEventListener("contextmenu", e=>{ if(e.target.closest && e.target.closest(".day,.tray-item,.evt")) e.preventDefault(); });
@@ -1112,7 +1250,7 @@ $("paidRemainInput").addEventListener("change", e=>{
   const v = Number(e.target.value);
   if(isNaN(v) || v<0){ syncRemainInput(); return; }
   const base = (Number(state.settings.paidTotal)||0) - leaveUsed();
-  state.settings.paidAdjust = Math.round((v-base)*10)/10;
+  state.settings.paidAdjust = Math.round((v-base)*4)/4;
   save(); renderLeave(); syncRemainInput();
   toast("有給残りを "+fmtNum(v)+" 日に合わせました");
 });
