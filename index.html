@@ -80,6 +80,8 @@ header.app p{margin:0;color:var(--sub);font-size:10.5px;font-weight:500}
 .day.today .dnum{background:var(--pink);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
 .day.period{background:var(--pink-soft)}
 .day.predicted{background:#fff;border:1.5px dashed #ffb3c9}
+.day .wx-bg{position:absolute;right:3px;bottom:3px;font-size:19px;line-height:1;opacity:.25;z-index:0;pointer-events:none}
+.day .marks,.day .evts{position:relative;z-index:1}
 .day .marks{display:flex;flex-wrap:wrap;justify-content:center;gap:1px 3px;margin-top:1px;min-height:21px}
 .mark{font-size:20px;font-weight:800;line-height:1.15}
 .mark.light{color:#ff9dbd} .mark.normal{color:var(--pink)} .mark.heavy{color:var(--danger)}
@@ -437,7 +439,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
     </div>
   </div>
 
-  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v27</span></footer>
+  <footer class="note">データはこのスマホの中だけに保存されます 🌷<br>ときどきバックアップ保存をしておくと安心だよ<br><span id="appVer">みきのマイカレンダー v28</span></footer>
 </div>
 
 <!-- 設定画面 -->
@@ -479,6 +481,9 @@ input,textarea{-webkit-user-select:text;user-select:text}
       <button id="importBtn">📂 バックアップ読込</button>
       <input type="file" id="importFile" accept=".json,application/json" style="display:none">
     </div>
+    <div class="picker-lbl" style="margin-top:14px">🌦 天気の地域</div>
+    <select id="weatherPlaceSel" class="ev-text" style="margin-top:6px"></select>
+    <p class="hint">選んだ地域の天気を、カレンダーのマスにうっすら出します（16日先まで）。</p>
   </div>
     <div class="sheet-btns">
       <button class="close" id="closeSettingsBtn">閉じる ♡</button>
@@ -557,7 +562,7 @@ function load(){
     if(raw){ const s = JSON.parse(raw); if(s && s.days && s.customs) return normalize(s); }
   }catch(e){}
   return normalize({
-    settings:{ paidTotal:20, paidAdjust:0, theme:"pink", showData:true, showPrediction:true },
+    settings:{ paidTotal:20, paidAdjust:0, theme:"pink", showData:true, showPrediction:true, weatherPlace:"広島市" },
     days:{}, events:[],
     customs:[
       {id:"c-hospital", name:"病院", symbol:"✚", color:"#4a7dd4"},
@@ -567,7 +572,7 @@ function load(){
   });
 }
 function normalize(s){
-  s.settings = Object.assign({paidTotal:20, paidAdjust:0, theme:"pink", showData:true, showPrediction:true}, s.settings||{});
+  s.settings = Object.assign({paidTotal:20, paidAdjust:0, theme:"pink", showData:true, showPrediction:true, weatherPlace:"広島市"}, s.settings||{});
   s.days = s.days||{}; s.customs = s.customs||[]; s.events = s.events||[]; s.todos = s.todos||[];
   return s;
 }
@@ -662,6 +667,49 @@ function renderLeave(){
   card.classList.toggle("empty", remain<=0);
   $("leaveWarn").textContent = remain<=0 ? "⚠ 有給が残ってないよ" : "⚠ 有給が少なくなってきたよ（残り5日以下）";
 }
+/* 天気（Open-Meteo） */
+const PLACES = [
+  {name:"札幌市", lat:43.0621, lon:141.3544}, {name:"仙台市", lat:38.2682, lon:140.8694},
+  {name:"東京都", lat:35.6895, lon:139.6917}, {name:"名古屋市", lat:35.1815, lon:136.9066},
+  {name:"大阪市", lat:34.6937, lon:135.5023}, {name:"広島市", lat:34.3853, lon:132.4553},
+  {name:"松山市", lat:33.8392, lon:132.7657}, {name:"福岡市", lat:33.5904, lon:130.4017},
+  {name:"那覇市", lat:26.2124, lon:127.6809}
+];
+let weatherData = null;
+function weatherInfo(code){
+  if(code === 0) return ["☀️","晴れ"];
+  if(code === 1) return ["🌤️","晴れ時々曇り"];
+  if(code === 2) return ["⛅","曇り時々晴れ"];
+  if(code === 3) return ["☁️","曇り"];
+  if(code === 45 || code === 48) return ["🌫️","霧"];
+  if(code >= 51 && code <= 57) return ["🌦️","小雨"];
+  if((code >= 61 && code <= 67) || (code >= 80 && code <= 82)) return ["🌧️","雨"];
+  if((code >= 71 && code <= 77) || code === 85 || code === 86) return ["❄️","雪"];
+  if(code >= 95) return ["⛈️","雷雨"];
+  return ["🌤️","晴れ時々曇り"];
+}
+async function loadWeather(){
+  const place = PLACES.find(x=>x.name === (state.settings.weatherPlace || "広島市")) || PLACES[5];
+  try{
+    const c = JSON.parse(localStorage.getItem("miki-calendar-weather") || "null");
+    if(c && c.place === place.name && c.date === todayKey && c.data){ weatherData = c.data; renderCalendar(); return; }
+  }catch(e){}
+  try{
+    const url = "https://api.open-meteo.com/v1/forecast?latitude=" + place.lat + "&longitude=" + place.lon
+      + "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FTokyo&forecast_days=16";
+    const j = await (await fetch(url)).json();
+    const data = {};
+    ((j.daily && j.daily.time) || []).forEach((t, i)=>{
+      data[t] = { code: j.daily.weather_code[i], tmax: Math.round(j.daily.temperature_2m_max[i]),
+        tmin: Math.round(j.daily.temperature_2m_min[i]), pop: j.daily.precipitation_probability_max ? j.daily.precipitation_probability_max[i] : null };
+    });
+    if(Object.keys(data).length){
+      weatherData = data;
+      try{ localStorage.setItem("miki-calendar-weather", JSON.stringify({place: place.name, date: todayKey, data})); }catch(e){}
+      renderCalendar();
+    }
+  }catch(e){ /* オフライン等のときは天気を出さない */ }
+}
 function renderCalendar(){
   $("monthTitle").textContent = viewYear+"年 "+(viewMonth+1)+"月";
   const grid = $("calGrid"); grid.innerHTML="";
@@ -706,7 +754,9 @@ function renderCalendar(){
     });
     if(evs.length>2) evHtml += '<div class="evt-more">+'+(evs.length-2)+'件</div>';
     cell.dataset.key = k;
-    cell.innerHTML = '<div class="dnum">'+d.getDate()+'</div><div class="marks">'+marks+'</div>'
+    const wxd = weatherData && weatherData[k];
+    cell.innerHTML = (wxd ? '<span class="wx-bg">'+weatherInfo(wxd.code)[0]+'</span>' : '')
+      + '<div class="dnum">'+d.getDate()+'</div><div class="marks">'+marks+'</div>'
       + (evHtml ? '<div class="evts">'+evHtml+'</div>' : '')
       + (isPred && info.next && k===dkey(info.next) ? '<div class="pred-lbl">予測</div>' : '')
       + (rec && rec.memo ? '<div class="memo-dot"></div>' : '');
@@ -972,6 +1022,12 @@ calCardEl.addEventListener("touchend", e=>{
 /* スイッチ */
 $("dataToggle").addEventListener("change", e=>{ state.settings.showData = e.target.checked; save(); renderData(); });
 $("predToggle").addEventListener("change", e=>{ state.settings.showPrediction = e.target.checked; save(); renderCalendar(); renderData(); });
+const wpSelM = $("weatherPlaceSel");
+if(wpSelM){
+  wpSelM.innerHTML = PLACES.map(x=>'<option value="'+x.name+'">'+x.name+'</option>').join("");
+  wpSelM.value = state.settings.weatherPlace || "広島市";
+  wpSelM.addEventListener("change", ()=>{ state.settings.weatherPlace = wpSelM.value; save(); weatherData = null; loadWeather(); toast("天気の地域を " + wpSelM.value + " にしました 🌦"); });
+}
 
 /* マイ項目追加フォーム */
 let selSymbol = SYMBOLS[0], selColor = COLORS[0];
@@ -1579,6 +1635,7 @@ buildThemePicker();
 applyTheme(state.settings.theme||"pink");
 syncRemainInput();
 renderAll();
+loadWeather();
 if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
 </script>
 </body>
